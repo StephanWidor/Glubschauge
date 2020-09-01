@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>haarcascade_frontalface_alt2.xml</file>
+        <file>lbfmodel.yaml</file>
+    </qresource>
+</RCC>
