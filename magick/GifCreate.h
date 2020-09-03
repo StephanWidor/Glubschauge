@@ -1,7 +1,13 @@
 #pragma once
-#ifndef ANDROID
+#if defined(ANDROID)
+// let's see...
+#elif defined(__APPLE__)
+#include <Magick++/Image.h>
+#include <Magick++/STL.h>
+#elif defined(__linux__)
 #include <ImageMagick-6/Magick++/Image.h>
 #include <ImageMagick-6/Magick++/STL.h>
+#endif
 #include <opencv2/core.hpp>
 
 #include <string>
@@ -23,5 +29,3 @@ private:
 };
 
 }    // namespace magick
-
-#endif

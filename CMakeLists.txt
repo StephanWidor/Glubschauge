@@ -1,38 +1,11 @@
 cmake_minimum_required(VERSION 3.5)
-
 project(Glubschauge LANGUAGES CXX)
-
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-# QtCreator supports the following variables for Android, which are identical to qmake Android variables.
-# Check http://doc.qt.io/qt-5/deployment-android.html for more information.
-# They need to be set before the find_package(Qt5 ...) call.
-find_package(Qt5 COMPONENTS Core Quick Multimedia Svg Widgets REQUIRED)
-
-if(ANDROID)
-    #set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
-    set(OPENCV_PATH "${CMAKE_CURRENT_SOURCE_DIR}/android/OpenCV-android-4.3.0-contrib/native")
-    set(OPENCVSHAREDLIBS_PATH "${OPENCV_PATH}/libs/${ANDROID_ABI}")
-    include_directories(
-        ${OPENCV_PATH}/jni/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/android/include
-        )
-    set(ANDROID_EXTRA_LIBS
-        ${OPENCVSHAREDLIBS_PATH}/libopencv_java4.so
-        CACHE INTERNAL ""
-        )
-    find_package(Qt5 COMPONENTS AndroidExtras REQUIRED)
-else()
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(MAGICK++ REQUIRED IMPORTED_TARGET Magick++)
-    pkg_check_modules(OPENCV4 REQUIRED IMPORTED_TARGET opencv4)
-    pkg_check_modules(TBB REQUIRED IMPORTED_TARGET tbb)
-endif()
 
 set(HEADERS
     Assets.h
@@ -58,7 +31,6 @@ set(HEADERS
     qt/ProcessingFilter.h
     qt/VideoChooser.h
     )
-
 set(SOURCES
     cv/BarrelCreation.cpp
     cv/FaceDetection.cpp
@@ -77,7 +49,6 @@ set(SOURCES
     qt/ProcessingFilter.cpp
     qt/VideoChooser.cpp
     )
-
 set(RESOURCES
     appData/appdata.qrc
     icons/icons.qrc
@@ -85,8 +56,19 @@ set(RESOURCES
     )
 
 if(ANDROID)
+    #set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
+    set(OPENCV_PATH "${CMAKE_CURRENT_SOURCE_DIR}/android/OpenCV-android-4.3.0-contrib/native")
+    set(OPENCVSHAREDLIBS_PATH "${OPENCV_PATH}/libs/${ANDROID_ABI}")
+    include_directories(
+        ${OPENCV_PATH}/jni/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/android/include
+        )
+    set(ANDROID_EXTRA_LIBS
+        ${OPENCVSHAREDLIBS_PATH}/libopencv_java4.so
+        CACHE INTERNAL ""
+        )
+    find_package(Qt5 COMPONENTS AndroidExtras REQUIRED)
     add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS} ${RESOURCES})
-
     set(OPENCVSTATICLIBS_PATH "${OPENCV_PATH}/staticlibs/${ANDROID_ABI}")
     set(OPENCV3RDPARTYLIBS_PATH "${OPENCV_PATH}/3rdparty/libs/${ANDROID_ABI}")
     target_link_libraries(Glubschauge
@@ -123,8 +105,25 @@ if(ANDROID)
         z
         Qt5::AndroidExtras
         )
+elseif(APPLE)
+    include_directories(/usr/local/include)
+    link_directories(/usr/local/lib)
+    add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES})
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(MAGICK++ REQUIRED IMPORTED_TARGET Magick++)
+    pkg_check_modules(OPENCV4 REQUIRED IMPORTED_TARGET opencv4)
+    target_link_libraries(Glubschauge
+      PRIVATE
+      PkgConfig::MAGICK++
+      PkgConfig::OPENCV4
+      tbb
+      )
 else()
     add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES})
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(MAGICK++ REQUIRED IMPORTED_TARGET Magick++)
+    pkg_check_modules(OPENCV4 REQUIRED IMPORTED_TARGET opencv4)
+    pkg_check_modules(TBB REQUIRED IMPORTED_TARGET tbb)
     target_link_libraries(Glubschauge
       PRIVATE
       PkgConfig::MAGICK++
@@ -134,6 +133,6 @@ else()
       )
 endif()
 
+find_package(Qt5 COMPONENTS Core Quick Multimedia Svg Widgets REQUIRED)
 target_link_libraries(Glubschauge
     PRIVATE Qt5::Core Qt5::Quick Qt5::Multimedia Qt5::Svg Qt5::Widgets)
-
