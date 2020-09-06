@@ -20,8 +20,6 @@ public:
 private:
     void capture(const cv::Mat &img);
 
-    void captureGif(const cv::Mat &img);
-
     ProcessingFilter &m_filter;
 };
 
@@ -67,11 +65,8 @@ public slots:
 
     void captureGif()
     {
-        if (!m_captureGif)
-        {
-            m_captureGif = true;
-            emit capturingGifChanged();
-        }
+        m_gifCreator.start(std::chrono::milliseconds{2000u}, [&]() { emit capturingGifChanged(); });
+        emit capturingGifChanged();
     }
 
 protected:
@@ -138,27 +133,17 @@ protected:
 
     bool getShowFps() const { return m_fpsEffect.enabled(); }
 
-    bool capturingGif() const { return m_captureGif; }
+    bool capturingGif() const { return m_gifCreator.collecting(); }
 
-    static constexpr bool canCaptureGif()
-    {
-#ifdef ANDROID
-        return false;
-#else
-        return true;
-#endif
-    }
+    static constexpr bool canCaptureGif() { return magick::GifCreate::isFunctional(); }
 
     ImageTransform m_imgTransform;
     cv::GlubschEffect m_glubschEffect;
     cv::FlashEffect m_flashEffect;
     cv::FpsEffect m_fpsEffect;
-#ifndef ANDROID
     magick::GifCreate m_gifCreator;
-#endif
     ProcessingFilterRunnable *m_pRunnable = nullptr;
     bool m_captureNext = false;
-    bool m_captureGif = false;
 };
 
 }    // namespace qt
