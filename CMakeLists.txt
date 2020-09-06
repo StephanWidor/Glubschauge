@@ -18,6 +18,7 @@ set(HEADERS
     cv/ImageUtils.h
     cv/MouthOpen.h
     cv/Utils2D.h
+    FileSystem.h
     FpsCounter.h
     Logger.h
     magick/GifCreate.h

@@ -1,6 +1,6 @@
 #include "qt/Assets.h"
+#include "FileSystem.h"
 #include "Logger.h"
-#include "qt/FileSystem.h"
 
 #include <QDir>
 #include <QFile>
