@@ -18,15 +18,6 @@ public:
 
     bool collecting() const { return m_collecting; }
 
-    static constexpr bool isFunctional()
-    {
-#ifdef ANDROID
-        return false;
-#else
-        return true;
-#endif
-    }
-
 private:
     void save(const std::string &file, std::chrono::milliseconds duration);
 

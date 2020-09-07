@@ -38,7 +38,6 @@ class ProcessingFilter : public QAbstractVideoFilter
     Q_PROPERTY(bool distortAlways READ getDistortAlways WRITE setDistortAlways NOTIFY doDistortChanged)
     Q_PROPERTY(bool showFps READ getShowFps WRITE setShowFps NOTIFY showFpsChanged)
     Q_PROPERTY(bool capturingGif READ capturingGif NOTIFY capturingGifChanged)
-    Q_PROPERTY(bool canCaptureGif READ canCaptureGif CONSTANT)
 
     friend ProcessingFilterRunnable;
 
@@ -134,8 +133,6 @@ protected:
     bool getShowFps() const { return m_fpsEffect.enabled(); }
 
     bool capturingGif() const { return m_gifCreator.collecting(); }
-
-    static constexpr bool canCaptureGif() { return cv::GifCreate::isFunctional(); }
 
     ImageTransform m_imgTransform;
     cv::GlubschEffect m_glubschEffect;

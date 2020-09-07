@@ -3,8 +3,6 @@
 
 #include <thread>
 
-#ifndef ANDROID
-
 void magick::GifContainer::push(const cv::Mat &img)
 {
     m_images.push_back(Magick::Image(img.cols, img.rows, "BGR", Magick::CharPixel, img.data));
@@ -24,5 +22,3 @@ void magick::GifContainer::save(const std::string &file, std::chrono::millisecon
         m_images.clear();
     }
 }
-
-#endif    // ANDROID

@@ -61,19 +61,20 @@ set(RESOURCES
 if(ANDROID)
     #set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
     set(OPENCV_PATH "${CMAKE_CURRENT_SOURCE_DIR}/android/OpenCV-android-4.3.0-contrib/native")
-    set(OPENCVSHAREDLIBS_PATH "${OPENCV_PATH}/libs/${ANDROID_ABI}")
+    set(MAGICK_PATH "${CMAKE_CURRENT_SOURCE_DIR}/android/ImageMagick")
     include_directories(
-        ${OPENCV_PATH}/jni/include
         ${CMAKE_CURRENT_SOURCE_DIR}/android/include
-        )
-    set(ANDROID_EXTRA_LIBS
-        ${OPENCVSHAREDLIBS_PATH}/libopencv_java4.so
-        CACHE INTERNAL ""
+        ${OPENCV_PATH}/jni/include
+        ${MAGICK_PATH}/include
         )
     find_package(Qt5 COMPONENTS AndroidExtras REQUIRED)
+    add_compile_options(-fopenmp)# -static-openmp)
+    add_compile_definitions(MAGICKCORE_HDRI_ENABLE=0 MAGICKCORE_QUANTUM_DEPTH=8)
+    add_link_options(-fopenmp -static-openmp)
     add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS} ${RESOURCES})
     set(OPENCVSTATICLIBS_PATH "${OPENCV_PATH}/staticlibs/${ANDROID_ABI}")
     set(OPENCV3RDPARTYLIBS_PATH "${OPENCV_PATH}/3rdparty/libs/${ANDROID_ABI}")
+    set(MAGICKLIBS_PATH "${MAGICK_PATH}/lib/${ANDROID_ABI}")
     target_link_libraries(Glubschauge
         PUBLIC
         ${OPENCVSTATICLIBS_PATH}/libopencv_face.a
@@ -103,6 +104,9 @@ if(ANDROID)
         ${OPENCV3RDPARTYLIBS_PATH}/libittnotify.a
         ${OPENCV3RDPARTYLIBS_PATH}/libtegra_hal.a
         ${OPENCV3RDPARTYLIBS_PATH}/libtbb.a
+        ${MAGICKLIBS_PATH}/libMagick++-7.Q8.a
+        ${MAGICKLIBS_PATH}/libMagickWand-7.Q8.a
+        ${MAGICKLIBS_PATH}/libMagickCore-7.Q8.a
         log
         GLESv2
         z
@@ -122,6 +126,7 @@ elseif(APPLE)
       tbb
       )
 else()
+    include_directories(/usr/include/ImageMagick-6)
     add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES})
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(MAGICK++ REQUIRED IMPORTED_TARGET Magick++)

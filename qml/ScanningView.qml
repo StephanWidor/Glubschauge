@@ -59,7 +59,6 @@ Rectangle {
 
     RoundButton {
         id: gifButton
-        visible: processingFilter.canCaptureGif
         enabled: !processingFilter.capturingGif
         x: captureButton.x - 1.5 * width
         y: parent.height - 1.5 * height
