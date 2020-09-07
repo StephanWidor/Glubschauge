@@ -14,6 +14,7 @@ set(HEADERS
     cv/FaceDistortionType.h
     cv/FlashEffect.h
     cv/FpsEffect.h
+    cv/GifCreate.h
     cv/GlubschEffect.h
     cv/ImageUtils.h
     cv/MouthOpen.h
@@ -21,7 +22,7 @@ set(HEADERS
     FileSystem.h
     FpsCounter.h
     Logger.h
-    magick/GifCreate.h
+    magick/GifContainer.h
     NumberSmoothing.h
     qt/Application.h
     qt/Assets.h
@@ -37,10 +38,11 @@ set(SOURCES
     cv/FaceDetection.cpp
     cv/FlashEffect.cpp
     cv/FpsEffect.cpp
+    cv/GifCreate.cpp
     cv/GlubschEffect.cpp
     cv/ImageUtils.cpp
     FpsCounter.cpp
-    magick/GifCreate.cpp
+    magick/GifContainer.cpp
     main.cpp
     qt/Application.cpp
     qt/Assets.cpp

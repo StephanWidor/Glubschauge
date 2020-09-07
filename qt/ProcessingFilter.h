@@ -1,8 +1,8 @@
 #pragma once
 #include "cv/FlashEffect.h"
 #include "cv/FpsEffect.h"
+#include "cv/GifCreate.h"
 #include "cv/GlubschEffect.h"
-#include "magick/GifCreate.h"
 #include "qt/ImageTransform.h"
 #include <QAbstractVideoFilter>
 
@@ -135,13 +135,13 @@ protected:
 
     bool capturingGif() const { return m_gifCreator.collecting(); }
 
-    static constexpr bool canCaptureGif() { return magick::GifCreate::isFunctional(); }
+    static constexpr bool canCaptureGif() { return cv::GifCreate::isFunctional(); }
 
     ImageTransform m_imgTransform;
     cv::GlubschEffect m_glubschEffect;
     cv::FlashEffect m_flashEffect;
     cv::FpsEffect m_fpsEffect;
-    magick::GifCreate m_gifCreator;
+    cv::GifCreate m_gifCreator;
     ProcessingFilterRunnable *m_pRunnable = nullptr;
     bool m_captureNext = false;
 };

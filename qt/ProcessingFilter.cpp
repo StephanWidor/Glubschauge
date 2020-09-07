@@ -1,7 +1,6 @@
 #include "qt/ProcessingFilter.h"
 #include "FileSystem.h"
 #include "Logger.h"
-#include "magick/GifCreate.h"
 #include "qt/ImageConvert.h"
 
 #include <chrono>

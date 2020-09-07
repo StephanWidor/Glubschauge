@@ -1,24 +1,13 @@
 #pragma once
 
-#if defined(ANDROID)
-namespace Magick {
-class Image
-{};
-}    // namespace Magick
-#elif defined(__APPLE__)
-#include <Magick++/Image.h>
-#include <Magick++/STL.h>
-#elif defined(__linux__)
-#include <ImageMagick-6/Magick++/Image.h>
-#include <ImageMagick-6/Magick++/STL.h>
-#endif
-#include <opencv2/core.hpp>
+#include "magick/GifContainer.h"
+using GifContainer = magick::GifContainer;
 
 #include <chrono>
 #include <string>
 #include <vector>
 
-namespace magick {
+namespace cv {
 
 class GifCreate
 {
@@ -45,7 +34,7 @@ private:
     std::chrono::time_point<std::chrono::system_clock> m_startTime;
     std::chrono::milliseconds m_duration;
     std::function<void()> m_callbackAfterCollect;
-    std::vector<Magick::Image> m_images;
+    GifContainer m_container;
 };
 
-}    // namespace magick
+}    // namespace cv
