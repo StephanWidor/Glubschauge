@@ -90,18 +90,8 @@ if(ANDROID)
         PUBLIC
         ${OPENCVSTATICLIBS_PATH}/libopencv_face.a
         ${OPENCVSTATICLIBS_PATH}/libopencv_imgcodecs.a
-        ${OPENCVSTATICLIBS_PATH}/libopencv_flann.a
         ${OPENCVSTATICLIBS_PATH}/libopencv_imgproc.a
-        ${OPENCVSTATICLIBS_PATH}/libopencv_highgui.a
-        ${OPENCVSTATICLIBS_PATH}/libopencv_features2d.a
-        ${OPENCVSTATICLIBS_PATH}/libopencv_calib3d.a
-        ${OPENCVSTATICLIBS_PATH}/libopencv_ml.a
         ${OPENCVSTATICLIBS_PATH}/libopencv_objdetect.a
-        ${OPENCVSTATICLIBS_PATH}/libopencv_photo.a
-        ${OPENCVSTATICLIBS_PATH}/libopencv_stitching.a
-        ${OPENCVSTATICLIBS_PATH}/libopencv_superres.a
-        ${OPENCVSTATICLIBS_PATH}/libopencv_video.a
-        ${OPENCVSTATICLIBS_PATH}/libopencv_videostab.a
         ${OPENCVSTATICLIBS_PATH}/libopencv_core.a
         ${OPENCV3RDPARTYLIBS_PATH}/liblibtiff.a
         ${OPENCV3RDPARTYLIBS_PATH}/liblibjpeg-turbo.a
@@ -111,9 +101,7 @@ if(ANDROID)
         ${OPENCV3RDPARTYLIBS_PATH}/libIlmImf.a
         ${OPENCV3RDPARTYLIBS_PATH}/liblibwebp.a
         ${OPENCV3RDPARTYLIBS_PATH}/libcpufeatures.a
-        ${OPENCV3RDPARTYLIBS_PATH}/liblibprotobuf.a
         ${OPENCV3RDPARTYLIBS_PATH}/libittnotify.a
-        ${OPENCV3RDPARTYLIBS_PATH}/libtegra_hal.a
         ${OPENCV3RDPARTYLIBS_PATH}/libtbb.a
         ${MAGICKLIBS_PATH}/libMagick++-7.Q8.a
         ${MAGICKLIBS_PATH}/libMagickWand-7.Q8.a
@@ -123,6 +111,18 @@ if(ANDROID)
         z
         Qt5::AndroidExtras
         )
+    if(ANDROID_ABI MATCHES "arm*")
+        target_link_libraries(Glubschauge
+            PUBLIC
+            ${OPENCV3RDPARTYLIBS_PATH}/libtegra_hal.a
+            )
+    else()
+        target_link_libraries(Glubschauge
+            PUBLIC
+            ${OPENCV3RDPARTYLIBS_PATH}/libippicv.a
+            ${OPENCV3RDPARTYLIBS_PATH}/libippiw.a
+            )
+    endif()
 elseif(APPLE)
     include_directories(/usr/local/include)
     link_directories(/usr/local/lib)
