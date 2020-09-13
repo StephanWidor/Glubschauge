@@ -50,7 +50,6 @@ Tested on Catalina with Qt5.15 using AppleClang11.
 
 # TODO
 
-- implement creating gifs for Android
 - fix opening video files on Android
 - multi ABI build for Android
 - make compile on Windows, MacOS, iOS

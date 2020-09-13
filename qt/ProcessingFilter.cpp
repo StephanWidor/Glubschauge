@@ -29,6 +29,7 @@ void qt::ProcessingFilterRunnable::capture(const cv::Mat &img)
           if (FileSystem::requestPermission(FileSystem::AccessType::Write) && cv::imwrite(path, saveImg))
           {
               m_filter.m_flashEffect.trigger();
+              FileSystem::triggerMediaScan(path);
           }
       },
       img)

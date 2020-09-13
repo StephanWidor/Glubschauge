@@ -5,6 +5,8 @@
 #include <QFile>
 #include <QStandardPaths>
 #ifdef ANDROID
+#include <QAndroidJniEnvironment>
+#include <QUrl>
 #include <QtAndroid>
 #endif
 
@@ -22,6 +24,29 @@ bool qt::FileSystem::requestPermission(AccessType type)
              QtAndroid::PermissionResult::Granted;
 #endif
     return true;
+}
+
+void qt::FileSystem::triggerMediaScan([[maybe_unused]] const std::string &filePath)
+{
+#ifdef ANDROID
+    QAndroidJniEnvironment env;
+    QAndroidJniObject context =
+      QtAndroid::androidActivity().callObjectMethod("getApplicationContext", "()Landroid/content/Context;");
+    QAndroidJniObject action = QAndroidJniObject::fromString("android.intent.action.MEDIA_SCANNER_SCAN_FILE");
+    QAndroidJniObject path =
+      QAndroidJniObject::fromString(QUrl::fromLocalFile(QString::fromStdString(filePath)).toString());
+    QAndroidJniObject uri = QAndroidJniObject::callStaticObjectMethod(
+      "android/net/Uri", "parse", "(Ljava/lang/String;)Landroid/net/Uri;", path.object<jstring>());
+    QAndroidJniObject intent("android/content/Intent");
+    intent = intent.callObjectMethod("setData", "(Landroid/net/Uri;)Landroid/content/Intent;", uri.object());
+    intent = intent.callObjectMethod("setAction", "(Ljava/lang/String;)Landroid/content/Intent;", action.object());
+    context.callMethod<void>("sendBroadcast", "(Landroid/content/Intent;)V", intent.object());
+    if (env->ExceptionCheck())
+    {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+    }
+#endif
 }
 
 std::string qt::FileSystem::provideAppDataDir()

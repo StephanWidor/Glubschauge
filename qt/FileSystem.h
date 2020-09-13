@@ -14,6 +14,8 @@ public:
 
     static bool requestPermission(AccessType);
 
+    static void triggerMediaScan(const std::string &filePath);
+
     static std::string provideAppDataDir();
 
     static std::string providePicturesDir();

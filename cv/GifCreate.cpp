@@ -29,6 +29,7 @@ void cv::GifCreate::push(const cv::Mat &img)
                   {
                       const auto path = FileSystem::generatePathForNewPicture("gif");
                       container.save(path, diffTime);
+                      FileSystem::triggerMediaScan(path);
                   }
               },
               m_container)
