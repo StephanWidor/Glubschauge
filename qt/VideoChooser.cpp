@@ -1,4 +1,5 @@
 #include "qt/VideoChooser.h"
+#include "FileSystem.h"
 
 #include <QFileDialog>
 #include <QStandardPaths>
@@ -10,6 +11,7 @@
 
 QString qt::VideoChooser::chooseVideo()
 {
+    FileSystem::requestPermission(FileSystem::AccessType::Read);
     const auto openFileName = QFileDialog::getOpenFileName(
       nullptr, "Play Video", QStandardPaths::writableLocation(QStandardPaths::MoviesLocation),
       "Videos (*.3gp *.avi *.m4v *.mov *.mp4 *.mpg  *.ogg *.vob *.wmv)");

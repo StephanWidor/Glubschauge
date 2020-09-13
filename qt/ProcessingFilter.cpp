@@ -3,7 +3,7 @@
 #include "Logger.h"
 #include "qt/ImageConvert.h"
 
-#include <chrono>
+#include <thread>
 
 QVideoFrame qt::ProcessingFilterRunnable::run(QVideoFrame *input, const QVideoSurfaceFormat &, RunFlags)
 {
@@ -23,8 +23,15 @@ QVideoFrame qt::ProcessingFilterRunnable::run(QVideoFrame *input, const QVideoSu
 
 void qt::ProcessingFilterRunnable::capture(const cv::Mat &img)
 {
-    const auto path = FileSystem::generatePathForNewPicture();
-    if (cv::imwrite(path, img))
-        m_filter.m_flashEffect.trigger();
+    std::thread(
+      [&](cv::Mat saveImg) {
+          const auto path = FileSystem::generatePathForNewPicture();
+          if (FileSystem::requestPermission(FileSystem::AccessType::Write) && cv::imwrite(path, saveImg))
+          {
+              m_filter.m_flashEffect.trigger();
+          }
+      },
+      img)
+      .detach();
     m_filter.m_captureNext = false;
 }

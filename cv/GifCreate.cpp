@@ -1,7 +1,7 @@
 #include "cv/GifCreate.h"
 #include "FileSystem.h"
 
-#include <opencv2/imgproc/imgproc.hpp>
+#include <thread>
 
 void cv::GifCreate::start(std::chrono::milliseconds duration, std::function<void()> callbackAfterCollect)
 {
@@ -19,12 +19,20 @@ void cv::GifCreate::push(const cv::Mat &img)
     using namespace std::chrono;
     if (m_collecting)
     {
-        assert(img.type() == CV_8UC3);
         m_container.push(img);
         if (const auto diffTime = duration_cast<milliseconds>(system_clock::now() - m_startTime);
             diffTime >= m_duration)
         {
-            m_container.save(FileSystem::generatePathForNewPicture("gif"), diffTime);
+            std::thread(
+              [diffTime](GifContainer container) {
+                  if (FileSystem::requestPermission(FileSystem::AccessType::Write))
+                  {
+                      const auto path = FileSystem::generatePathForNewPicture("gif");
+                      container.save(path, diffTime);
+                  }
+              },
+              m_container)
+              .detach();
             m_collecting = false;
             m_callbackAfterCollect();
         }

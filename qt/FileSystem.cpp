@@ -4,10 +4,25 @@
 #include <QDir>
 #include <QFile>
 #include <QStandardPaths>
+#ifdef ANDROID
+#include <QtAndroid>
+#endif
 
 #include <chrono>
 #include <iomanip>
 #include <sstream>
+
+bool qt::FileSystem::requestPermission(AccessType type)
+{
+    QString permissionString = type == AccessType::Read ? "android.permission.READ_EXTERNAL_STORAGE" :
+                                                          "android.permission.WRITE_EXTERNAL_STORAGE";
+#ifdef ANDROID
+    return QtAndroid::checkPermission(permissionString) == QtAndroid::PermissionResult::Granted ||
+           QtAndroid::requestPermissionsSync({permissionString}).value(permissionString) ==
+             QtAndroid::PermissionResult::Granted;
+#endif
+    return true;
+}
 
 std::string qt::FileSystem::provideAppDataDir()
 {

@@ -6,6 +6,14 @@ namespace qt {
 class FileSystem
 {
 public:
+    enum class AccessType
+    {
+        Read,
+        Write
+    };
+
+    static bool requestPermission(AccessType);
+
     static std::string provideAppDataDir();
 
     static std::string providePicturesDir();
