@@ -60,6 +60,17 @@ set(RESOURCES
 
 if(ANDROID)
     #set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
+    set(ANDROID_ABIS "armeabi-v7a arm64-v8a x86 x86_64" CACHE STRING "")
+    set(ANDROID_BUILD_ABI_armeabi-v7a ON CACHE BOOL "")
+    #set(ANDROID_BUILD_ABI_arm64-v8a ON CACHE BOOL "")
+    #set(ANDROID_BUILD_ABI_x86 ON CACHE BOOL "")
+    #set(ANDROID_BUILD_ABI_x86_64 ON CACHE BOOL "")
+    set(ANDROID_NATIVE_API_LEVEL 26 CACHE STRING "")
+    set(ANDROID_API_VERSION 26 CACHE STRING "")
+    set(ANDROID_MIN_SDK_VERSION 26 CACHE STRING "")
+    set(ANDROID_TARGET_SDK_VERSION  26 CACHE STRING "")
+    set(ANDROID_PERMISSIONS "android.permission.READ_EXTERNAL_STORAGE android.permission.WRITE_EXTERNAL_STORAGE android.permission.CAMERA"
+        CACHE INTERNAL "")
     set(OPENCV_PATH "${CMAKE_CURRENT_SOURCE_DIR}/android/OpenCV-android-4.3.0-contrib/native")
     set(MAGICK_PATH "${CMAKE_CURRENT_SOURCE_DIR}/android/ImageMagick")
     include_directories(
