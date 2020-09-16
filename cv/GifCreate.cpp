@@ -34,6 +34,7 @@ void cv::GifCreate::push(const cv::Mat &img)
               },
               m_container)
               .detach();
+            m_container.clear();
             m_collecting = false;
             m_callbackAfterCollect();
         }

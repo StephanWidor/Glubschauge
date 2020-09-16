@@ -16,6 +16,8 @@ public:
 
     void save(const std::string &file, std::chrono::milliseconds duration);
 
+    void clear() { m_images.clear(); }
+
 private:
     std::vector<Magick::Image> m_images;
 };
