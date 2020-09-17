@@ -14,11 +14,11 @@
 #include <iomanip>
 #include <sstream>
 
-bool qt::FileSystem::requestPermission(AccessType type)
+bool qt::FileSystem::requestPermission([[maybe_unused]] AccessType type)
 {
+#ifdef ANDROID
     QString permissionString = type == AccessType::Read ? "android.permission.READ_EXTERNAL_STORAGE" :
                                                           "android.permission.WRITE_EXTERNAL_STORAGE";
-#ifdef ANDROID
     return QtAndroid::checkPermission(permissionString) == QtAndroid::PermissionResult::Granted ||
            QtAndroid::requestPermissionsSync({permissionString}).value(permissionString) ==
              QtAndroid::PermissionResult::Granted;
