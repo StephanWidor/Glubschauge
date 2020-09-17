@@ -36,3 +36,48 @@ void qt::ProcessingFilterRunnable::capture(const cv::Mat &img)
       .detach();
     m_filter.m_captureNext = false;
 }
+
+QVideoFilterRunnable *qt::ProcessingFilter::createFilterRunnable()
+{
+    m_pRunnable = new ProcessingFilterRunnable(*this);
+    return m_pRunnable;
+}
+
+void qt::ProcessingFilter::captureGif()
+{
+    m_gifCreator.start(
+      std::chrono::milliseconds{2000u},
+      [&]() {
+          emit capturingGifChanged();
+          emit processingGifChanged();
+      },
+      [&]() { emit processingGifChanged(); });
+    emit capturingGifChanged();
+}
+
+void qt::ProcessingFilter::setShowLandmarks(bool show)
+{
+    if (m_glubschEffect.getDrawLandmarks() != show)
+    {
+        m_glubschEffect.setDrawLandmarks(show);
+        emit showLandmarksChanged();
+    }
+}
+
+void qt::ProcessingFilter::setDoDistort(cv::FaceDistortionType type, bool distort)
+{
+    if (m_glubschEffect.getDoDistort(type) != distort)
+    {
+        m_glubschEffect.setDoDistort(type, distort);
+        emit doDistortChanged();
+    }
+}
+
+void qt::ProcessingFilter::setShowFps(bool show)
+{
+    if (m_fpsEffect.enabled() != show)
+    {
+        m_fpsEffect.setEnabled(show);
+        emit showFpsChanged();
+    }
+}

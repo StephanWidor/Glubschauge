@@ -57,14 +57,25 @@ Rectangle {
         onClicked: processingFilter.capture()
     }
 
-    RoundButton {
-        id: gifButton
-        enabled: !processingFilter.capturingGif
-        x: captureButton.x - 1.5 * width
-        y: parent.height - 1.5 * height
-        text: "gif"
-        palette.button: enabled? "transparent" : "red"
-        onClicked: processingFilter.captureGif()
+    Item {
+        x: captureButton.x - 1.5 * gifButton.width
+        y: parent.height - 1.5 * gifButton.height
+        width: gifButton.width
+        height: gifButton.height
+        RoundButton {
+            id: gifButton
+            enabled: !processingFilter.capturingGif
+            text: "gif"
+            palette.button: enabled? "transparent" : "red"
+            onClicked: processingFilter.captureGif()
+        }
+        BusyIndicator {
+            anchors.centerIn: parent
+            width: 1.5 * gifButton.width
+            height: 1.5 * gifButton.height
+            visible: processingFilter.processingGif
+            running: processingFilter.processingGif
+        }
     }
 
     SettingsView {

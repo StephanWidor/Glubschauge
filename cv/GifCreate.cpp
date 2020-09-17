@@ -3,13 +3,15 @@
 
 #include <thread>
 
-void cv::GifCreate::start(std::chrono::milliseconds duration, std::function<void()> callbackAfterCollect)
+void cv::GifCreate::start(std::chrono::milliseconds duration, std::function<void()> callbackAfterCollect,
+                          std::function<void()> callbackAfterProcessing)
 {
     if (!m_collecting)
     {
         m_duration = duration;
         m_startTime = std::chrono::system_clock::now();
         m_callbackAfterCollect = callbackAfterCollect;
+        m_callbackAfterProcessing = callbackAfterProcessing;
         m_collecting = true;
     }
 }
@@ -24,12 +26,15 @@ void cv::GifCreate::push(const cv::Mat &img)
             diffTime >= m_duration)
         {
             std::thread(
-              [diffTime](GifContainer container) {
+              [diffTime, this](GifContainer container) {
                   if (FileSystem::requestPermission(FileSystem::AccessType::Write))
                   {
+                      ++m_processing;
                       const auto path = FileSystem::generatePathForNewPicture("gif");
                       container.save(path, diffTime);
                       FileSystem::triggerMediaScan(path);
+                      --m_processing;
+                      m_callbackAfterProcessing();
                   }
               },
               m_container)

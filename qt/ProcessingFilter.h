@@ -38,17 +38,14 @@ class ProcessingFilter : public QAbstractVideoFilter
     Q_PROPERTY(bool distortAlways READ getDistortAlways WRITE setDistortAlways NOTIFY doDistortChanged)
     Q_PROPERTY(bool showFps READ getShowFps WRITE setShowFps NOTIFY showFpsChanged)
     Q_PROPERTY(bool capturingGif READ capturingGif NOTIFY capturingGifChanged)
+    Q_PROPERTY(bool processingGif READ processingGif NOTIFY processingGifChanged)
 
     friend ProcessingFilterRunnable;
 
 public:
     ProcessingFilter(QObject *pParent = nullptr): QAbstractVideoFilter(pParent) {}
 
-    QVideoFilterRunnable *createFilterRunnable() override
-    {
-        m_pRunnable = new ProcessingFilterRunnable(*this);
-        return m_pRunnable;
-    }
+    QVideoFilterRunnable *createFilterRunnable() override;
 
 signals:
     void rotationChanged();
@@ -57,16 +54,13 @@ signals:
     void doDistortChanged();
     void showFpsChanged();
     void capturingGifChanged();
+    void processingGifChanged();
 
 public slots:
 
     void capture() { m_captureNext = true; }
 
-    void captureGif()
-    {
-        m_gifCreator.start(std::chrono::milliseconds{2000u}, [&]() { emit capturingGifChanged(); });
-        emit capturingGifChanged();
-    }
+    void captureGif();
 
 protected:
     void setRotation(int rotation) { m_imgTransform.setRotation(rotation); }
@@ -77,14 +71,7 @@ protected:
 
     bool getDoCameraTransform() const { return m_imgTransform.getDoCameraTransform(); }
 
-    void setShowLandmarks(bool show)
-    {
-        if (m_glubschEffect.getDrawLandmarks() != show)
-        {
-            m_glubschEffect.setDrawLandmarks(show);
-            emit showLandmarksChanged();
-        }
-    }
+    void setShowLandmarks(bool show);
 
     bool getShowLandmarks() const { return m_glubschEffect.getDrawLandmarks(); }
 
@@ -112,27 +99,15 @@ protected:
 
     bool getDistortAlways() const { return m_glubschEffect.getDistortAlways(); }
 
-    void setDoDistort(cv::FaceDistortionType type, bool distort)
-    {
-        if (m_glubschEffect.getDoDistort(type) != distort)
-        {
-            m_glubschEffect.setDoDistort(type, distort);
-            emit doDistortChanged();
-        }
-    }
+    void setDoDistort(cv::FaceDistortionType type, bool distort);
 
-    void setShowFps(bool show)
-    {
-        if (m_fpsEffect.enabled() != show)
-        {
-            m_fpsEffect.setEnabled(show);
-            emit showFpsChanged();
-        }
-    }
+    void setShowFps(bool show);
 
     bool getShowFps() const { return m_fpsEffect.enabled(); }
 
     bool capturingGif() const { return m_gifCreator.collecting(); }
+
+    bool processingGif() const { return m_gifCreator.processing(); }
 
     ImageTransform m_imgTransform;
     cv::GlubschEffect m_glubschEffect;
