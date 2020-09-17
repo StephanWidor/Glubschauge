@@ -3,6 +3,15 @@
 
 #include <thread>
 
+cv::GifCreate::~GifCreate()
+{
+    {
+        // busy wait until gif saving has finished
+        while (processing())
+            ;
+    }
+}
+
 void cv::GifCreate::start(std::chrono::milliseconds duration, std::function<void()> callbackAfterCollect,
                           std::function<void()> callbackAfterProcessing)
 {

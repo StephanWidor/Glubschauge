@@ -13,6 +13,8 @@ namespace cv {
 class GifCreate
 {
 public:
+    ~GifCreate();
+
     void start(std::chrono::milliseconds duration, std::function<void()> callbackAfterCollect,
                std::function<void()> callbackAfterProcessing);
 
