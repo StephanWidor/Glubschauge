@@ -8,9 +8,15 @@ namespace cv {
 class FpsEffect
 {
 public:
-    void setEnabled(bool enabled) { m_counter.setEnabled(enabled); }
+    void setEnabled(bool enabled)
+    {
+        if (enabled)
+            m_counter.start();
+        else
+            m_counter.stop();
+    }
 
-    bool enabled() const { return m_counter.enabled(); }
+    bool enabled() const { return m_counter.running(); }
 
     void process(Mat &io_img);
 

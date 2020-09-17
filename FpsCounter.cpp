@@ -2,27 +2,31 @@
 
 using namespace std::chrono;
 
-void FpsCounter::setEnabled(bool enabled)
+void FpsCounter::start(const std::function<void(double)> &callbackAfterEval, std::chrono::milliseconds evalTime)
 {
-    if (enabled == m_enabled)
-        return;
-    if (enabled)
+    if (!m_running)
     {
         m_tickCount = 0u;
         m_fps = 0.0;
+        m_evalTime = evalTime;
+        m_callbackAfterEval = callbackAfterEval;
         m_startTime = system_clock::now();
-        m_enabled = true;
-    }
-    else
-    {
-        m_fps = -1.0;
-        m_enabled = false;
+        m_running = true;
     }
 }
 
-double FpsCounter::tick(const std::function<void(double)> &callbackAfterEval)
+void FpsCounter::stop()
 {
-    if (m_enabled)
+    if (m_running)
+    {
+        m_fps = -1.0;
+        m_running = false;
+    }
+}
+
+double FpsCounter::tick()
+{
+    if (m_running)
     {
         using namespace std::chrono;
         const auto diffTime = duration_cast<milliseconds>(system_clock::now() - m_startTime);
@@ -32,7 +36,7 @@ double FpsCounter::tick(const std::function<void(double)> &callbackAfterEval)
         {
             m_fps = (diffTime / m_evalTime) * static_cast<double>(m_tickCount);
             if (m_fps > 0.0)
-                callbackAfterEval(m_fps);
+                m_callbackAfterEval(m_fps);
             m_tickCount = 0u;
             m_startTime = system_clock::now();
         }
