@@ -34,17 +34,17 @@ void cv::GifCreate::push(const cv::Mat &img)
         if (const auto diffTime = duration_cast<milliseconds>(system_clock::now() - m_startTime);
             diffTime >= m_duration)
         {
+            ++m_processing;
             std::thread(
               [diffTime, this](GifContainer container) {
                   if (FileSystem::requestPermission(FileSystem::AccessType::Write))
                   {
-                      ++m_processing;
                       const auto path = FileSystem::generatePathForNewPicture("gif");
                       container.save(path, diffTime);
                       FileSystem::triggerMediaScan(path);
-                      --m_processing;
-                      m_callbackAfterProcessing();
                   }
+                  --m_processing;
+                  m_callbackAfterProcessing();
               },
               m_container)
               .detach();
