@@ -32,7 +32,7 @@ void qt::ProcessingFilterRunnable::capture(const cv::Mat &img)
               FileSystem::triggerMediaScan(path);
           }
       },
-      img)
+      img.clone())
       .detach();
     m_filter.m_captureNext = false;
 }
