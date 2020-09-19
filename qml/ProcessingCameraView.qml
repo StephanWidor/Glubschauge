@@ -25,21 +25,13 @@ Rectangle {
     function playVideo(file)
     {
         console.log("playVideo: " + file)
-        camera.stop()
         mediaPlayer.source = file
-        videoOutput.source = mediaPlayer
-        videoOutput.autoOrientation = false
-        videoOutput.orientation = 0
         mediaPlayer.play()
-        cameraView.playingVideo = true
     }
 
     function stopVideo()
     {
         mediaPlayer.stop()
-        videoOutput.autoOrientation = true
-        camera.start()
-        cameraView.playingVideo = false
     }
 
     function toggleCamera()
@@ -62,6 +54,18 @@ Rectangle {
     MediaPlayer {
         id: mediaPlayer
         onError: console.log(errorString)
+        onPlaying: {
+            camera.stop()
+            videoOutput.source = mediaPlayer
+            videoOutput.autoOrientation = false
+            videoOutput.orientation = 0
+            cameraView.playingVideo = true
+        }
+        onStopped: {
+            videoOutput.autoOrientation = true
+            cameraView.playingVideo = false
+            camera.start()
+        }
     }
 
     VideoOutput {
