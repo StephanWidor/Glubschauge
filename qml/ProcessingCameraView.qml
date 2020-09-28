@@ -10,6 +10,27 @@ Rectangle {
     property size resolution: camera.viewfinder.resolution
     property bool playingVideo: false
 
+    function setNearestResolution(resolutionAsSize)
+    {
+        var numPixels = resolutionAsSize.width * resolutionAsSize.height
+        var available = camera.supportedViewfinderResolutions()
+        var minDiff = Number.MAX_VALUE
+        var minIndex = -1
+        for(var i = 0; i < available.length; ++i)
+        {
+            var widthDiff = (available[i].width - resolutionAsSize.width)
+            var heightDiff = (available[i].height - resolutionAsSize.height)
+            var diff = widthDiff * widthDiff + heightDiff * heightDiff
+            if(diff < minDiff)
+            {
+                minDiff = diff
+                minIndex = i
+            }
+        }
+        if(minIndex !== -1)
+            setResolution(Qt.size(available[minIndex].width, available[minIndex].height))
+    }
+
     function setResolution(resolution)
     {
         camera.stop()
@@ -49,6 +70,14 @@ Rectangle {
         focus.focusMode: Camera.FocusContinuous
         viewfinder.onResolutionChanged: console.log("camera resolution: " + viewfinder.resolution)
         onError: console.log(errorString)
+        property bool initialized: false
+        onCameraStatusChanged: {
+            if(!initialized && cameraStatus === Camera.ActiveStatus)
+            {
+                cameraView.setNearestResolution(Qt.size(720, 480))
+                initialized = true
+            }
+        }
     }
 
     MediaPlayer {
