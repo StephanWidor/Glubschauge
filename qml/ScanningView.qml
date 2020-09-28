@@ -44,7 +44,7 @@ Rectangle {
         y: parent.height - 1.5 * height
         icon.source: "qrc:/camera-flip.svg"
         palette.button: "transparent"
-        visible: QtMultimedia.availableCameras.length > 1
+        visible: !cameraView.playingVideo && QtMultimedia.availableCameras.length > 1
         onClicked: cameraView.toggleCamera()
     }
 
