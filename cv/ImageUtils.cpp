@@ -59,21 +59,18 @@ void ImageUtils::distort(Mat &io_img, const BarrelInfo &barrelInfo)
     infoImg.copyTo(io_img(infoRect));
 }
 
-char ImageUtils::showDebug(const Mat &img, const ::std::string *pWindowName)
+void ImageUtils::showDebug(const Mat &img, const std::string *pWindowName)
 {
-    std::string windowName = (pWindowName == nullptr) ? "Debug" : *pWindowName;
-    char c = 'c';
-    (void)img;
 #ifndef ANDROID
+    std::string windowName = (pWindowName == nullptr) ? "Debug" : *pWindowName;
     namedWindow(windowName, WINDOW_AUTOSIZE);
     if (img.data != nullptr)
     {
         imshow(windowName, img);
-        c = waitKey();
+        waitKey();
         destroyWindow(windowName);
     }
 #endif
-    return c;
 }
 
 }    // namespace cv

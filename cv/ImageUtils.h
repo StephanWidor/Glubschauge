@@ -32,7 +32,8 @@ public:
             distort(io_img, info);
     }
 
-    static char showDebug(const Mat &img, const std::string *pWindowName = nullptr);
+    /// Shows image on Desktop until any key pressed, does nothing on Android
+    static void showDebug([[maybe_unused]] const Mat &img, [[maybe_unused]] const std::string *pWindowName = nullptr);
 };
 
 }    // namespace cv
