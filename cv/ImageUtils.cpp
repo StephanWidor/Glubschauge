@@ -1,8 +1,6 @@
 #include "cv/ImageUtils.h"
 #include "cv/Utils2D.h"
 
-#include <tbb/parallel_for.h>
-
 namespace cv {
 
 Mat ImageUtils::fitToSize(const Mat &img, Size size, bool inner)
@@ -52,14 +50,15 @@ void ImageUtils::distort(Mat &io_img, const BarrelInfo &barrelInfo)
             infoImg.at<Vec3b>(point - tlInfo) = io_img.at<Vec3b>(readPoint);
         }
     };
-    tbb::parallel_for(tbb::blocked_range<int>(tlInfo.y, brInfo.y), [&](tbb::blocked_range<int> rowRange) {
-        for (int row = rowRange.begin(); row < rowRange.end(); ++row)
-            processRow(row);
-    });
+
+#pragma omp parallel for
+    for (int row = tlInfo.y; row < brInfo.y; ++row)
+        processRow(row);
+
     infoImg.copyTo(io_img(infoRect));
 }
 
-void ImageUtils::showDebug(const Mat &img, const std::string *pWindowName)
+void ImageUtils::showDebug([[maybe_unused]] const Mat &img, [[maybe_unused]] const std::string *pWindowName)
 {
 #ifndef ANDROID
     std::string windowName = (pWindowName == nullptr) ? "Debug" : *pWindowName;

@@ -74,12 +74,11 @@ if(ANDROID)
     set(OPENCV_PATH "${CMAKE_CURRENT_SOURCE_DIR}/android/OpenCV-android-4.3.0-contrib/native")
     set(MAGICK_PATH "${CMAKE_CURRENT_SOURCE_DIR}/android/ImageMagick")
     include_directories(
-        ${CMAKE_CURRENT_SOURCE_DIR}/android/include
         ${OPENCV_PATH}/jni/include
         ${MAGICK_PATH}/include
         )
     find_package(Qt5 COMPONENTS AndroidExtras REQUIRED)
-    add_compile_options(-fopenmp)# -static-openmp)
+    add_compile_options(-fopenmp)
     add_compile_definitions(MAGICKCORE_HDRI_ENABLE=0 MAGICKCORE_QUANTUM_DEPTH=8)
     add_link_options(-fopenmp -static-openmp)
     add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS} ${RESOURCES})
@@ -134,20 +133,19 @@ elseif(APPLE)
       PRIVATE
       PkgConfig::MAGICK++
       PkgConfig::OPENCV4
-      tbb
       )
 else()
     include_directories(/usr/include/ImageMagick-6)
+    add_compile_options(-fopenmp)
+    add_link_options(-fopenmp)
     add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES})
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(MAGICK++ REQUIRED IMPORTED_TARGET Magick++)
     pkg_check_modules(OPENCV4 REQUIRED IMPORTED_TARGET opencv4)
-    pkg_check_modules(TBB REQUIRED IMPORTED_TARGET tbb)
     target_link_libraries(Glubschauge
       PRIVATE
       PkgConfig::MAGICK++
       PkgConfig::OPENCV4
-      PkgConfig::TBB
       pthread
       )
 endif()
