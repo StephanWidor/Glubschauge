@@ -9,6 +9,12 @@ Rectangle {
     property alias cameraStatus: camera.cameraStatus
     property size resolution: camera.viewfinder.resolution
     property bool playingVideo: false
+    property var mediaPos: mediaPlayer.position/mediaPlayer.duration
+
+    function setMediaPos(pos)
+    {
+        mediaPlayer.seek(pos*mediaPlayer.duration)
+    }
 
     function setNearestResolution(resolutionAsSize)
     {

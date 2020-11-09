@@ -1,2 +1,2 @@
-These icons are taken from ubuntu-mobile-icons:
+Most icons are taken from ubuntu-mobile-icons:
 https://packages.ubuntu.com/focal/ubuntu-mobile-icons

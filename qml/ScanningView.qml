@@ -8,73 +8,103 @@ import stephanwidor.Glubschauge 1.0
 Rectangle {
     anchors.fill: parent
     id: scanningView
-    property bool switchesAtBottom: scanningView.height > cameraView.contentRect.height
 
     ProcessingCameraView {
         id: cameraView
         anchors.fill: parent
     }
 
-    RoundButton {
-        id: playVideoButton
-        x: 0.5 * width
-        y: 0.5 * height
-        icon.source: cameraView.playingVideo? "qrc:/camcorder.svg" : "qrc:/browser-tabs.svg"
-        palette.button: "transparent"
-        onClicked: {
-            if(cameraView.playingVideo)
-                cameraView.stopVideo()
-            else
-                cameraView.playVideo(VideoChooser.chooseVideo())
-        }
-    }
-
-    RoundButton {
-        id: settingsButton
-        x: parent.width - 1.5 * width
-        y: 0.5 * height
-        icon.source: "qrc:/properties.svg"
-        palette.button: "transparent"
-        onClicked: settingsView.open()
-    }
-
-    RoundButton {
-        id: toggleCameraButton
-        x: 0.5 * width
-        y: parent.height - 1.5 * height
-        icon.source: "qrc:/camera-flip.svg"
-        palette.button: "transparent"
-        visible: !cameraView.playingVideo && QtMultimedia.availableCameras.length > 1
-        onClicked: cameraView.toggleCamera()
-    }
-
-    RoundButton {
-        id: captureButton
-        x: parent.width - 1.5 * width
-        y: parent.height - 1.5 * height
-        icon.source: "qrc:/camera-symbolic.svg"
-        palette.button: "transparent"
-        onClicked: processingFilter.capture()
-    }
-
-    Item {
-        x: captureButton.x - 1.5 * gifButton.width
-        y: parent.height - 1.5 * gifButton.height
-        width: gifButton.width
-        height: gifButton.height
+    RowLayout {
+        anchors.top: parent.top
+        anchors.topMargin: 10
+        anchors.horizontalCenter: parent.horizontalCenter
+        width: parent.width - 20
         RoundButton {
-            id: gifButton
-            enabled: !processingFilter.capturingGif
-            text: "gif"
-            palette.button: enabled? "transparent" : "red"
-            onClicked: processingFilter.captureGif()
+            id: playVideoButton
+            icon.source: "qrc:/browser-tabs.svg"
+            palette.button: "transparent"
+            visible: !cameraView.playingVideo
+            onClicked: cameraView.playVideo(VideoChooser.chooseVideo())
         }
-        BusyIndicator {
-            anchors.centerIn: parent
-            width: 1.5 * gifButton.width
-            height: 1.5 * gifButton.height
-            visible: processingFilter.processingGif
-            running: processingFilter.processingGif
+        Item {
+            Layout.fillWidth: true
+        }
+        RoundButton {
+            id: settingsButton
+            icon.source: "qrc:/properties.svg"
+            palette.button: "transparent"
+            onClicked: settingsView.open()
+        }
+    }
+
+    RowLayout {
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 10
+        anchors.horizontalCenter: parent.horizontalCenter
+        width: parent.width - 20
+
+        RoundButton {
+            id: toggleCameraButton
+            icon.source: "qrc:/camera-flip.svg"
+            palette.button: "transparent"
+            visible: !cameraView.playingVideo && QtMultimedia.availableCameras.length > 1
+            onClicked: cameraView.toggleCamera()
+        }
+
+        Frame {
+            visible: cameraView.playingVideo
+            Layout.fillWidth: true
+            padding: 0
+            RowLayout {
+                anchors.fill: parent
+                RoundButton {
+                    id: stopVideoButton
+                    icon.source: "qrc:/stop.svg"
+                    palette.button: "transparent"
+                    visible: cameraView.playingVideo
+                    onClicked: cameraView.stopVideo()
+                }
+                Slider {
+                    id: videoSlider
+                    visible: cameraView.playingVideo
+                    from: 0
+                    to: 1
+                    value: cameraView.mediaPos
+                    Layout.fillWidth: true
+                    onMoved: cameraView.setMediaPos(value)
+                }
+            }
+        }
+
+        Item {
+            visible: !cameraView.playingVideo
+            Layout.fillWidth: true
+        }
+
+        RoundButton {
+            id: captureButton
+            icon.source: "qrc:/camera-symbolic.svg"
+            palette.button: "transparent"
+            onClicked: processingFilter.capture()
+        }
+
+        Item {
+            width: gifButton.width
+            height: gifButton.height
+            RoundButton {
+                id: gifButton
+                enabled: !processingFilter.capturingGif
+                text: "gif"
+                palette.button: enabled? "transparent" : "red"
+                onClicked: processingFilter.captureGif()
+            }
+            BusyIndicator {
+                anchors.centerIn: parent
+                width: 1.2 * gifButton.width
+                height: 1.2 * gifButton.height
+                visible: processingFilter.processingGif
+                running: processingFilter.processingGif
+            }
         }
     }
 

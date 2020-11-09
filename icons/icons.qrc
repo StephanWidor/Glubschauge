@@ -6,5 +6,6 @@
         <file>camcorder.svg</file>
         <file>clear.svg</file>
         <file>properties.svg</file>
+        <file>stop.svg</file>
     </qresource>
 </RCC>
