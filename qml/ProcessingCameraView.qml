@@ -78,10 +78,12 @@ Rectangle {
         onError: console.log(errorString)
         property bool initialized: false
         onCameraStatusChanged: {
-            if(!initialized && cameraStatus === Camera.ActiveStatus)
+            // looks a bit strange and tedious, but it seems that we have different status changes on different platforms.
+            // this seems to work on all of them.
+            if(!initialized && (cameraStatus === Camera.LoadedStatus || cameraStatus === Camera.ActiveStatus))
             {
-                cameraView.setNearestResolution(Qt.size(720, 480))
                 initialized = true
+                cameraView.setNearestResolution(Qt.size(720, 480))
             }
         }
     }
