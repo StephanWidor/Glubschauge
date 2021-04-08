@@ -15,12 +15,14 @@ QString qt::VideoChooser::chooseVideo()
     const auto openFileName = QFileDialog::getOpenFileName(
       nullptr, "Play Video", QStandardPaths::writableLocation(QStandardPaths::MoviesLocation),
       "Videos (*.3gp *.avi *.m4v *.mov *.mp4 *.mpg  *.ogg *.vob *.wmv)");
-#ifdef ANDROID
+#if defined(ANDROID)
     // This is a workaround to get the local file path from Android ContentUri (qml MediaPlayer won't open uri).
     // Will only work if we stay in QStandardPaths::MoviesLocation!
     // TODO: fix this
     const auto fileName = contentUriInfo(openFileName, "DISPLAY_NAME");
     return "file://" + QStandardPaths::writableLocation(QStandardPaths::MoviesLocation) + "/" + fileName;
+#elif defined(_WIN32)
+    return "file:///" + openFileName;
 #else
     return "file://" + openFileName;
 #endif

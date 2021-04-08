@@ -5,10 +5,13 @@ namespace qt {
 
 void ImageTransform::transformFromCamera(cv::Mat &io_img) const
 {
-#ifdef ANDROID
+#if defined(ANDROID)
     cv::flip(io_img, io_img, 0);    // whyever this is neccessary... bug in qml VideoOutput?
     if (m_doCameraTransform)
         rotate(io_img, m_rotation);
+#elif defined(_WIN32)
+    if (m_doCameraTransform)
+        cv::flip(io_img, io_img, -1);
 #else
     if (m_doCameraTransform)
         cv::flip(io_img, io_img, 1);
@@ -17,9 +20,12 @@ void ImageTransform::transformFromCamera(cv::Mat &io_img) const
 
 void ImageTransform::transformToCamera(cv::Mat &io_img) const
 {
-#ifdef ANDROID
+#if defined(ANDROID)
     if (m_doCameraTransform)
         rotate(io_img, -m_rotation);
+#elif defined(_WIN32)
+    if (m_doCameraTransform)
+        cv::flip(io_img, io_img, 0);
 #else
     (void)io_img;
 #endif

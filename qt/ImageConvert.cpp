@@ -34,7 +34,7 @@ cv::Mat ImageConvert::toMat(QVideoFrame &frame)
             case QVideoFrame::Format_RGB32:
             {
                 cv::Mat rgb32Mat(frame.height(), frame.width(), CV_8UC4, frame.bits());
-                cv::cvtColor(rgb32Mat, img, cv::COLOR_RGBA2BGR);
+                cv::cvtColor(rgb32Mat, img, cv::COLOR_RGBA2RGB);
                 break;
             }
             case QVideoFrame::Format_ABGR32:    // seems this is rather RGBA!

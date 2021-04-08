@@ -14,7 +14,7 @@ public:
 
     int getRotation() const { return m_rotation; }
 
-    void setDoCameraTransform(bool flip) { m_doCameraTransform = flip; }
+    void setDoCameraTransform(bool doTransform) { m_doCameraTransform = doTransform; }
 
     int getDoCameraTransform() const { return m_doCameraTransform; }
 

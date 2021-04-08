@@ -68,7 +68,7 @@ protected:
 
     int getRotation() const { return m_imgTransform.getRotation(); }
 
-    void setDoCameraTransform(bool flip) { m_imgTransform.setDoCameraTransform(flip); }
+    void setDoCameraTransform(bool doTransform) { m_imgTransform.setDoCameraTransform(doTransform); }
 
     bool getDoCameraTransform() const { return m_imgTransform.getDoCameraTransform(); }
 
