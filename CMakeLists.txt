@@ -70,24 +70,28 @@ if(ANDROID)
     set(ANDROID_MIN_SDK_VERSION 26)
     set(ANDROID_TARGET_SDK_VERSION 30)
 
-    add_compile_options(-fopenmp)
-    add_link_options(-fopenmp -static-openmp)
     add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS} ${RESOURCES})
 elseif(APPLE)
     include_directories(/usr/local/include)
     link_directories(/usr/local/lib)
-    add_compile_options(-Xclang -fopenmp)
-    add_link_options(-lomp)
     add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES})
 else()
-    add_compile_options(-fopenmp)
-    add_link_options(-fopenmp)
     add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES})
 endif()
 
+##### OpenMP #####
+if(ANDROID)
+    add_compile_options(-fopenmp)
+    add_link_options(-fopenmp -static-openmp)
+else()
+    find_package(OpenMP)
+    if(OpenMP_CXX_FOUND)
+        target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
+    endif()
+endif()
+
 ##### OpenCV #####
-target_link_libraries(${PROJECT_NAME}
-    PRIVATE OpenCV)
+target_link_libraries(${PROJECT_NAME} PRIVATE OpenCV)
 
 ##### Qt #####
 if(ANDROID)
