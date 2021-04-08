@@ -26,10 +26,10 @@ cmake \
     -DANDROID_SDK=$SDK_PATH \
     -DANDROID_NATIVE_API_LEVEL=26 \
     -DANDROID_ABIS="armeabi-v7a arm64-v8a x86 x86_64" \
-    -DANDROID_BUILD_ABI_armeabi-v7a=ON \
+    -DANDROID_BUILD_ABI_armeabi-v7a=OFF \
     -DANDROID_BUILD_ABI_arm64-v8a=ON \
-    -DANDROID_BUILD_ABI_x86=ON \
-    -DANDROID_BUILD_ABI_x86_64=ON \
+    -DANDROID_BUILD_ABI_x86=OFF \
+    -DANDROID_BUILD_ABI_x86_64=OFF \
     ..
 cmake --build . --parallel 2 --target all
 
