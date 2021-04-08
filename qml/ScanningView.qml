@@ -89,6 +89,7 @@ Rectangle {
         }
 
         Item {
+            visible: processingFilter.gifEnabled
             width: gifButton.width
             height: gifButton.height
             RoundButton {

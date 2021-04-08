@@ -70,48 +70,61 @@ if(ANDROID)
     set(ANDROID_MIN_SDK_VERSION 26)
     set(ANDROID_TARGET_SDK_VERSION 30)
 
-    set(MAGICK_PATH "${CMAKE_CURRENT_SOURCE_DIR}/android/ImageMagick")
-    include_directories(
-        ${MAGICK_PATH}/include
-        )
-    find_package(Qt5 COMPONENTS AndroidExtras REQUIRED)
     add_compile_options(-fopenmp)
-    add_compile_definitions(MAGICKCORE_HDRI_ENABLE=0 MAGICKCORE_QUANTUM_DEPTH=8)
     add_link_options(-fopenmp -static-openmp)
     add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS} ${RESOURCES})
-    set(MAGICKLIBS_PATH "${MAGICK_PATH}/lib/${ANDROID_ABI}")
-    target_link_libraries(${PROJECT_NAME}
-        PUBLIC
-        ${MAGICKLIBS_PATH}/libMagick++-7.Q8.a
-        ${MAGICKLIBS_PATH}/libMagickWand-7.Q8.a
-        ${MAGICKLIBS_PATH}/libMagickCore-7.Q8.a
-        Qt5::AndroidExtras
-        )
 elseif(APPLE)
     include_directories(/usr/local/include)
     link_directories(/usr/local/lib)
     add_compile_options(-Xclang -fopenmp)
     add_link_options(-lomp)
     add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES})
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(MAGICK++ REQUIRED IMPORTED_TARGET Magick++)
-    target_link_libraries(${PROJECT_NAME}
-      PRIVATE
-      PkgConfig::MAGICK++
-      )
 else()
-    include_directories(/usr/include/ImageMagick-6)
     add_compile_options(-fopenmp)
     add_link_options(-fopenmp)
     add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES})
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(MAGICK++ REQUIRED IMPORTED_TARGET Magick++)
-    target_link_libraries(${PROJECT_NAME}
-      PRIVATE
-      PkgConfig::MAGICK++
-      )
 endif()
 
-find_package(Qt5 COMPONENTS Core Quick Multimedia Svg Widgets REQUIRED)
+##### OpenCV #####
 target_link_libraries(${PROJECT_NAME}
-    PRIVATE Qt5::Core Qt5::Quick Qt5::Multimedia Qt5::Svg Qt5::Widgets OpenCV)
+    PRIVATE OpenCV)
+
+##### Qt #####
+if(ANDROID)
+    find_package(Qt5 COMPONENTS AndroidExtras Core Quick Multimedia Svg Widgets REQUIRED)
+    target_link_libraries(${PROJECT_NAME}
+        PRIVATE Qt5::AndroidExtras Qt5::Core Qt5::Quick Qt5::Multimedia Qt5::Svg Qt5::Widgets)
+else()
+    find_package(Qt5 COMPONENTS Core Quick Multimedia Svg Widgets REQUIRED)
+    target_link_libraries(${PROJECT_NAME}
+        PRIVATE Qt5::Core Qt5::Quick Qt5::Multimedia Qt5::Svg Qt5::Widgets)
+endif()
+
+##### ImageMagick #####
+if(ANDROID)
+    set(MAGICK_PATH "${CMAKE_CURRENT_SOURCE_DIR}/android/ImageMagick")
+    include_directories(
+        ${MAGICK_PATH}/include
+        )
+    add_compile_definitions(MAGICKCORE_HDRI_ENABLE=0 MAGICKCORE_QUANTUM_DEPTH=8 IMAGEMAGICK_AVAILABLE)
+    set(MAGICKLIBS_PATH "${MAGICK_PATH}/lib/${ANDROID_ABI}")
+    target_link_libraries(${PROJECT_NAME}
+        PUBLIC
+        ${MAGICKLIBS_PATH}/libMagick++-7.Q8.a
+        ${MAGICKLIBS_PATH}/libMagickWand-7.Q8.a
+        ${MAGICKLIBS_PATH}/libMagickCore-7.Q8.a
+        )
+else()
+    find_package(ImageMagick COMPONENTS Magick++ MagickWand MagickCore)
+    if(ImageMagick_FOUND)
+        message("Found ImageMagick ${ImageMagick_VERSION_STRING}, will enable gif export")
+        add_compile_definitions(MAGICKCORE_HDRI_ENABLE=0 MAGICKCORE_QUANTUM_DEPTH=16 IMAGEMAGICK_AVAILABLE)
+        include_directories(${ImageMagick_INCLUDE_DIRS})
+        target_link_libraries(${PROJECT_NAME}
+          PRIVATE
+          ${ImageMagick_LIBRARIES}
+          )
+    else()
+        message("ImageMagick not found, will disable gif export")
+    endif()
+endif()

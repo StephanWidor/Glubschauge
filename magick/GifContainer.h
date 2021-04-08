@@ -1,7 +1,9 @@
 #pragma once
+#include <opencv2/core.hpp>
+#ifdef IMAGEMAGICK_AVAILABLE
 #include <Magick++/Image.h>
 #include <Magick++/STL.h>
-#include <opencv2/core.hpp>
+#endif
 
 #include <chrono>
 #include <string>
@@ -12,14 +14,16 @@ namespace magick {
 class GifContainer
 {
 public:
-    void push(const cv::Mat &img);
+    void push(const cv::Mat &);
 
-    void save(const std::string &file, std::chrono::milliseconds duration);
+    bool save(const std::string &file, std::chrono::milliseconds duration);
 
-    void clear() { m_images.clear(); }
+    void clear();
 
 private:
-    std::vector<Magick::Image> m_images;
+#ifdef IMAGEMAGICK_AVAILABLE
+    std::vector<Magick::Image> m_images;    // swdebug: maybe store cv::Mat?
+#endif
 };
 
 }    // namespace magick

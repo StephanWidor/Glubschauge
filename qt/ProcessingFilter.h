@@ -37,6 +37,7 @@ class ProcessingFilter : public QAbstractVideoFilter
     Q_PROPERTY(bool doLowerHeadDistort READ getDoLowerHeadDistort WRITE setDoLowerHeadDistort NOTIFY doDistortChanged)
     Q_PROPERTY(bool distortAlways READ getDistortAlways WRITE setDistortAlways NOTIFY doDistortChanged)
     Q_PROPERTY(bool showFps READ getShowFps WRITE setShowFps NOTIFY showFpsChanged)
+    Q_PROPERTY(bool gifEnabled MEMBER m_gifEnabled CONSTANT)
     Q_PROPERTY(bool capturingGif READ capturingGif NOTIFY capturingGifChanged)
     Q_PROPERTY(bool processingGif READ processingGif NOTIFY processingGifChanged)
 
@@ -116,6 +117,11 @@ protected:
     cv::GifCreate m_gifCreator;
     ProcessingFilterRunnable *m_pRunnable = nullptr;
     bool m_captureNext = false;
+#ifdef IMAGEMAGICK_AVAILABLE
+    static constexpr bool m_gifEnabled = true;
+#else
+    static constexpr bool m_gifEnabled = false;
+#endif
 };
 
 }    // namespace qt

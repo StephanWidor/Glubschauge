@@ -1,5 +1,6 @@
 #include "cv/GifCreate.h"
 #include "FileSystem.h"
+#include "Logger.h"
 
 #include <thread>
 
@@ -40,7 +41,8 @@ void cv::GifCreate::push(const cv::Mat &img)
                   if (FileSystem::requestPermission(FileSystem::AccessType::Write))
                   {
                       const auto path = FileSystem::generatePathForNewPicture("gif");
-                      container.save(path, diffTime);
+                      if (!container.save(path, diffTime))
+                          Logger::debug() << "failed to save " << path;
                       FileSystem::triggerMediaScan(path);
                   }
                   --m_processing;
