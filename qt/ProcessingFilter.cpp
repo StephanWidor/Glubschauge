@@ -15,6 +15,8 @@ QVideoFrame qt::ProcessingFilterRunnable::run(QVideoFrame *input, const QVideoSu
     m_filter.m_gifCreator.push(img);
     m_filter.m_flashEffect.process(img);
     m_filter.m_fpsEffect.process(img);
+    if (m_filter.streamingToOutputDevice())
+        m_filter.m_pOutputDevice->push(img);
     m_filter.m_imgTransform.transformToCamera(img);
     if (QVideoFrame output = ImageConvert::toQVideoFrame(img); output.width() != 0)
         return output;
@@ -79,5 +81,23 @@ void qt::ProcessingFilter::setShowFps(bool show)
     {
         m_fpsEffect.setEnabled(show);
         emit showFpsChanged();
+    }
+}
+
+void qt::ProcessingFilter::streamToOutputDevice(const QString &device)
+{
+    if (m_pOutputDevice == nullptr)
+    {
+        m_pOutputDevice = std::make_unique<cv::OutputDevice>(device.toStdString().c_str());
+        emit streamingToOutputDeviceChanged();
+    }
+}
+
+void qt::ProcessingFilter::stopStreamingToOutputDevice()
+{
+    if (m_pOutputDevice != nullptr)
+    {
+        m_pOutputDevice = nullptr;
+        emit streamingToOutputDeviceChanged();
     }
 }

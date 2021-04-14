@@ -3,6 +3,7 @@
 #include "cv/FpsEffect.h"
 #include "cv/GifCreate.h"
 #include "cv/GlubschEffect.h"
+#include "cv/OutputDevice.h"
 #include "qt/ImageTransform.h"
 #include <QAbstractVideoFilter>
 
@@ -40,6 +41,8 @@ class ProcessingFilter : public QAbstractVideoFilter
     Q_PROPERTY(bool gifEnabled MEMBER m_gifEnabled CONSTANT)
     Q_PROPERTY(bool capturingGif READ capturingGif NOTIFY capturingGifChanged)
     Q_PROPERTY(bool processingGif READ processingGif NOTIFY processingGifChanged)
+    Q_PROPERTY(bool streamingToOutputPossible MEMBER m_streamingToOutputPossible CONSTANT)
+    Q_PROPERTY(bool streamingToOutputDevice READ streamingToOutputDevice NOTIFY streamingToOutputDeviceChanged)
 
     friend ProcessingFilterRunnable;
 
@@ -56,12 +59,17 @@ signals:
     void showFpsChanged();
     void capturingGifChanged();
     void processingGifChanged();
+    void streamingToOutputDeviceChanged();
 
 public slots:
 
     void capture() { m_captureNext = true; }
 
     void captureGif();
+
+    void streamToOutputDevice(const QString &device);
+
+    void stopStreamingToOutputDevice();
 
 protected:
     void setRotation(int rotation) { m_imgTransform.setRotation(rotation); }
@@ -110,6 +118,8 @@ protected:
 
     bool processingGif() const { return m_gifCreator.processing(); }
 
+    bool streamingToOutputDevice() const { return m_pOutputDevice != nullptr; }
+
     ImageTransform m_imgTransform;
     cv::GlubschEffect m_glubschEffect;
     cv::FlashEffect m_flashEffect;
@@ -122,6 +132,8 @@ protected:
 #else
     static constexpr bool m_gifEnabled = false;
 #endif
+    static constexpr bool m_streamingToOutputPossible = cv::OutputDevice::implemented();
+    std::unique_ptr<cv::OutputDevice> m_pOutputDevice;
 };
 
 }    // namespace qt

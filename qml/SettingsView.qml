@@ -95,6 +95,7 @@ Drawer {
         GroupBox {
             title: "Camera"
             Layout.fillWidth: true
+            enabled: !processingFilter.streamingToOutputDevice
             RowLayout {
                 ComboBox {
                     id: resolutionComboBox
@@ -135,6 +136,41 @@ Drawer {
                     palette.button: "transparent"
                     visible: QtMultimedia.availableCameras.length > 1
                     onClicked: cameraView.toggleCamera()
+                }
+            }
+        }
+
+        GroupBox {
+            title: "Stream"
+            Layout.fillWidth: true
+            visible: processingFilter.streamingToOutputPossible
+            RowLayout {
+                Switch {
+                    id: streamToOutputDeviceSwitch
+                    text: "Stream to "
+                    position: processingFilter.streamingToOutputDevice? 1 : 0
+                    onClicked: {
+                        if(position==0)
+                            processingFilter.stopStreamingToOutputDevice()
+                        else
+                            processingFilter.streamToOutputDevice(outputDeviceEdit.text)
+                    }
+                }
+                Item {
+                    Layout.fillWidth: true
+                }
+                Rectangle {
+                    color: "white"
+                    border.color: "darkgray"
+                    border.width: 2
+                    width: outputDeviceEdit.width + 10
+                    height: outputDeviceEdit.height +10
+                    TextEdit {
+                        id: outputDeviceEdit
+                        anchors.centerIn: parent
+                        text: "/dev/video5"
+                        enabled: processingFilter.streamToOutputDevice
+                    }
                 }
             }
         }

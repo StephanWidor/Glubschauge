@@ -38,6 +38,18 @@ cmake -DCMAKE_PREFIX_PATH=PATH_TO_YOUR_QT_INSTALL/gcc_64
 make -j$(nproc)
 ```
 
+On Linux, you can also stream to an output device. If you have v4l2loopback installed
+(on Debian/Ubuntu deb packages v4l2loopback-dkms and v4l2loopback-utils),
+do e.g.
+
+```
+sudo modprobe v4l2loopback exclusive_caps=1 video_nr=5 card_label="Glubschauge Cam"
+```
+
+Then choose `/device/video5` as output device in the app settings, and enjoy using Glubschauge
+as camera in other applications.
+
+
 Tested on Ubuntu20.04 with Qt5.14 and 5.15 using gcc9.3 and clang10.
 
 ## Android
@@ -99,5 +111,6 @@ Tested on Windows 10 using msvc from Visual Studio 16.
 
 # TODO
 
+- check rotation/transformation of camera image on different devices
 - fix opening video files on Android
-- Win and iOS version
+- iOS version
