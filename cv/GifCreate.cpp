@@ -1,23 +1,20 @@
 #include "cv/GifCreate.h"
-#include "FileSystem.h"
 #include "Logger.h"
-
 #include <thread>
 
 cv::GifCreate::~GifCreate()
 {
-    {
-        // busy wait until gif saving has finished
-        while (processing())
-            ;
-    }
+    // busy wait until gif saving has finished
+    while (processing())
+        ;
 }
 
-void cv::GifCreate::start(std::chrono::milliseconds duration, std::function<void()> callbackAfterCollect,
-                          std::function<void()> callbackAfterProcessing)
+void cv::GifCreate::start(const std::string &path, std::chrono::milliseconds duration,
+                          std::function<void()> callbackAfterCollect, std::function<void()> callbackAfterProcessing)
 {
     if (!m_collecting)
     {
+        m_path = path;
         m_duration = duration;
         m_startTime = std::chrono::system_clock::now();
         m_callbackAfterCollect = callbackAfterCollect;
@@ -37,14 +34,9 @@ void cv::GifCreate::push(const cv::Mat &img)
         {
             ++m_processing;
             std::thread(
-              [diffTime, this](GifContainer container) {
-                  if (FileSystem::requestPermission(FileSystem::AccessType::Write))
-                  {
-                      const auto path = FileSystem::generatePathForNewPicture("gif");
-                      if (!container.save(path, diffTime))
-                          logger::out << "failed to save " << path;
-                      FileSystem::triggerMediaScan(path);
-                  }
+              [diffTime, this, path = m_path](GifContainer container) {
+                  if (!container.save(path, diffTime))
+                      logger::out << "failed to save " << path;
                   --m_processing;
                   m_callbackAfterProcessing();
               },

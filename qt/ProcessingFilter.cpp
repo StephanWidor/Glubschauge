@@ -12,7 +12,8 @@ QVideoFrame qt::ProcessingFilterRunnable::run(QVideoFrame *input, const QVideoSu
     m_filter.m_glubschEffect.process(img);
     if (m_filter.m_captureNext)
         capture(img);
-    m_filter.m_gifCreator.push(img);
+    if (m_filter.m_gifCreator.collecting())
+        m_filter.m_gifCreator.push(img);
     m_filter.m_flashEffect.process(img);
     m_filter.m_fpsEffect.process(img);
     if (m_filter.streamingToOutputDevice())
@@ -47,14 +48,23 @@ QVideoFilterRunnable *qt::ProcessingFilter::createFilterRunnable()
 
 void qt::ProcessingFilter::captureGif()
 {
-    m_gifCreator.start(
-      std::chrono::milliseconds{2000u},
-      [&]() {
-          emit capturingGifChanged();
-          emit processingGifChanged();
-      },
-      [&]() { emit processingGifChanged(); });
-    emit capturingGifChanged();
+    if (FileSystem::requestPermission(FileSystem::AccessType::Write))
+    {
+        const auto path = FileSystem::generatePathForNewPicture("gif");
+        m_gifCreator.start(
+          path, std::chrono::milliseconds{2000u},
+          [this]() {
+              emit capturingGifChanged();
+              emit processingGifChanged();
+          },
+          [this, path]() {
+              FileSystem::triggerMediaScan(path);
+              emit processingGifChanged();
+          });
+        emit capturingGifChanged();
+    }
+    else
+        logger::out << "No Permission to write gif";
 }
 
 void qt::ProcessingFilter::setShowLandmarks(bool show)

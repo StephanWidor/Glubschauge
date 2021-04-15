@@ -23,7 +23,6 @@ set(HEADERS
     cv/MouthOpen.h
     cv/OutputDevice.h
     cv/Utils2D.h
-    FileSystem.h
     FpsCounter.h
     Logger.h
     magick/GifContainer.h
