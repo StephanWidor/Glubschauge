@@ -17,7 +17,7 @@ bool FaceDetection::loadData()
     }
     catch (...)
     {}
-    Logger::debug() << "couldn't load all data!";
+    logger::out << "couldn't load all data!";
     return false;
 }
 

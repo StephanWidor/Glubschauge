@@ -54,7 +54,7 @@ std::string qt::FileSystem::provideAppDataDir()
     QString appDataPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/";
     if (QDir appDataDir(appDataPath); appDataDir.exists() || appDataDir.mkdir(appDataPath))
         return appDataPath.toStdString();
-    Logger::debug() << "couldn't create appDataPath";
+    logger::out << "couldn't create appDataPath";
     return "";
 }
 
@@ -63,7 +63,7 @@ std::string qt::FileSystem::providePicturesDir()
     QString picturesPath = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation) + "/Glubschauge/";
     if (QDir picturesDir(picturesPath); picturesDir.exists() || picturesDir.mkdir(picturesPath))
         return picturesPath.toStdString();
-    Logger::debug() << "couldn't create picturesPath";
+    logger::out << "couldn't create picturesPath";
     return "";
 }
 

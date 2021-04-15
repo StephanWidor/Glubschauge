@@ -54,6 +54,6 @@ void cv::OutputDevice::push([[maybe_unused]] const cv::Mat &img)
     cv::Mat yuv;
     cv::cvtColor(img, yuv, cv::COLOR_BGR2YUV_I420);
     if (::write(m_output, yuv.data, yuv.cols * yuv.rows) < 0)
-        Logger::info() << "ERROR: could not write to output device!\n";
+        logger::out << "ERROR: could not write to output device!\n";
 #endif
 }

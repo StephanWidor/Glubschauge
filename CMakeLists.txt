@@ -33,7 +33,6 @@ set(HEADERS
     qt/FileSystem.h
     qt/ImageConvert.h
     qt/ImageTransform.h
-    qt/Logger.h
     qt/ProcessingFilter.h
     qt/VideoChooser.h
     )

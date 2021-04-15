@@ -1,7 +1,6 @@
 #include "qt/Assets.h"
 #include "FileSystem.h"
 #include "Logger.h"
-
 #include <QDir>
 #include <QFile>
 #include <QStandardPaths>
@@ -13,7 +12,7 @@ std::string qt::Assets::provideResource(const std::string &file)
     QString cascadeDataPath = appDataPath + qFile;
     if (QFile::exists(cascadeDataPath) || QFile::copy(":/" + qFile, cascadeDataPath))
         return cascadeDataPath.toStdString();
-    Logger::debug() << ("Couldn't copy " + file);
+    logger::out << ("Couldn't copy " + file);
     return "";
 }
 

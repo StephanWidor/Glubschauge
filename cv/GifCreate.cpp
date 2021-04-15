@@ -42,7 +42,7 @@ void cv::GifCreate::push(const cv::Mat &img)
                   {
                       const auto path = FileSystem::generatePathForNewPicture("gif");
                       if (!container.save(path, diffTime))
-                          Logger::debug() << "failed to save " << path;
+                          logger::out << "failed to save " << path;
                       FileSystem::triggerMediaScan(path);
                   }
                   --m_processing;

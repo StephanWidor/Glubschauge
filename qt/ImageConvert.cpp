@@ -50,13 +50,13 @@ cv::Mat ImageConvert::toMat(QVideoFrame &frame)
                 break;
             }
             default:
-                Logger::debug() << "Couldn't convert " << frameFormat << "to cv::Mat";
+                logger::out << "Couldn't convert " << frameFormat << "to cv::Mat";
                 break;
         }
         frame.unmap();
     }
     else
-        Logger::debug() << "Couldn't map or read QVideoFrame";
+        logger::out << "Couldn't map or read QVideoFrame";
     return img;
 }
 
@@ -74,7 +74,7 @@ QVideoFrame ImageConvert::toQVideoFrame(const cv::Mat &img)
         frame.unmap();
     }
     else
-        Logger::debug() << "couldn't map frame";
+        logger::out << "couldn't map frame";
     return frame;
 }
 
