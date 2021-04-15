@@ -1,17 +1,22 @@
 #include "cv/FaceDetection.h"
-#include "Assets.h"
 #include "Logger.h"
 #include "cv/ImageUtils.h"
 
 namespace cv {
 
-bool FaceDetection::loadData()
+FaceDetection::FaceDetection(const std::string &cascadeDataPath, const std::string &facemarkDataPath)
+    : m_dataLoaded(false), m_facemark(face::FacemarkLBF::create())
+{
+    m_dataLoaded = loadData(cascadeDataPath, facemarkDataPath);
+}
+
+bool FaceDetection::loadData(const std::string &cascadeDataPath, const std::string &facemarkDataPath)
 {
     try
     {
-        if (m_faceDetector.load(String(Assets::provideCascadeData())))
+        if (m_faceDetector.load(cascadeDataPath))
         {
-            m_facemark->loadModel(String(Assets::provideFacemarkData()));
+            m_facemark->loadModel(facemarkDataPath);
             return true;
         }
     }

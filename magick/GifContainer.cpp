@@ -1,5 +1,4 @@
 #include "magick/GifContainer.h"
-#include "FileSystem.h"
 
 #ifdef IMAGEMAGICK_AVAILABLE
 

@@ -47,7 +47,7 @@ class ProcessingFilter : public QAbstractVideoFilter
     friend ProcessingFilterRunnable;
 
 public:
-    ProcessingFilter(QObject *pParent = nullptr): QAbstractVideoFilter(pParent) {}
+    ProcessingFilter(QObject *pParent = nullptr);
 
     QVideoFilterRunnable *createFilterRunnable() override;
 

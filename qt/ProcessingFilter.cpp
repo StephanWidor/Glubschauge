@@ -1,8 +1,8 @@
 #include "qt/ProcessingFilter.h"
 #include "FileSystem.h"
 #include "Logger.h"
+#include "qt/Assets.h"
 #include "qt/ImageConvert.h"
-
 #include <thread>
 
 QVideoFrame qt::ProcessingFilterRunnable::run(QVideoFrame *input, const QVideoSurfaceFormat &, RunFlags)
@@ -39,6 +39,10 @@ void qt::ProcessingFilterRunnable::capture(const cv::Mat &img)
       .detach();
     m_filter.m_captureNext = false;
 }
+
+qt::ProcessingFilter::ProcessingFilter(QObject *pParent)
+    : QAbstractVideoFilter(pParent), m_glubschEffect(Assets::provideCascadeData(), Assets::provideFacemarkData())
+{}
 
 QVideoFilterRunnable *qt::ProcessingFilter::createFilterRunnable()
 {

@@ -8,6 +8,10 @@ namespace cv {
 class GlubschEffect
 {
 public:
+    GlubschEffect(const std::string &cascadeDataPath, const std::string &facemarkDataPath)
+        : m_faceDetection(cascadeDataPath, facemarkDataPath)
+    {}
+
     void process(Mat &io_img);
 
     void setDrawLandmarks(bool draw) { m_drawLandmarks = draw; }

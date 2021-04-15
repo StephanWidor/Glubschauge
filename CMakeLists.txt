@@ -11,7 +11,6 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
 set(HEADERS
-    Assets.h
     cv/BarrelCreation.h
     cv/FaceDetection.h
     cv/FaceDistortionType.h

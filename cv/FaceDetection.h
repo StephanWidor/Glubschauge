@@ -36,12 +36,12 @@ public:
         return landmarks0;
     }
 
-    FaceDetection(): m_dataLoaded(false), m_facemark(face::FacemarkLBF::create()) { m_dataLoaded = loadData(); }
+    FaceDetection(const std::string &cascadeDataPath, const std::string &facemarkDataPath);
 
     std::pair<BBoxes, std::vector<Landmarks>> detect(const Mat &img);
 
 private:
-    bool loadData();
+    bool loadData(const std::string &cascadeDataPath, const std::string &facemarkDataPath);
 
     std::vector<Rect> findBBoxes(const Mat &img);
 
