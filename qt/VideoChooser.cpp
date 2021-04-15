@@ -1,6 +1,5 @@
 #include "qt/VideoChooser.h"
-#include "FileSystem.h"
-
+#include "qt/FileSystem.h"
 #include <QFileDialog>
 #include <QStandardPaths>
 #ifdef ANDROID

@@ -1,5 +1,5 @@
 #include "qt/ImageConvert.h"
-#include "Logger.h"
+#include <Logger.h>
 #include <opencv2/opencv.hpp>
 
 namespace qt {

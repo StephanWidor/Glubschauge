@@ -1,8 +1,5 @@
 #pragma once
-
 #include "magick/GifContainer.h"
-using GifContainer = magick::GifContainer;
-
 #include <atomic>
 #include <chrono>
 #include <string>
@@ -14,6 +11,8 @@ class GifCreate
 {
 public:
     ~GifCreate();
+
+    static bool implemented();
 
     void start(const std::string &path, std::chrono::milliseconds duration, std::function<void()> callbackAfterCollect,
                std::function<void()> callbackAfterProcessing);
@@ -34,7 +33,7 @@ private:
     std::chrono::milliseconds m_duration;
     std::function<void()> m_callbackAfterCollect;
     std::function<void()> m_callbackAfterProcessing;
-    GifContainer m_container;
+    magick::GifContainer m_container;
 };
 
 }    // namespace cv

@@ -9,6 +9,11 @@ cv::GifCreate::~GifCreate()
         ;
 }
 
+bool cv::GifCreate::implemented()
+{
+    return magick::GifContainer::implemented();
+}
+
 void cv::GifCreate::start(const std::string &path, std::chrono::milliseconds duration,
                           std::function<void()> callbackAfterCollect, std::function<void()> callbackAfterProcessing)
 {
@@ -34,7 +39,7 @@ void cv::GifCreate::push(const cv::Mat &img)
         {
             ++m_processing;
             std::thread(
-              [diffTime, this, path = m_path](GifContainer container) {
+              [diffTime, this, path = m_path](magick::GifContainer container) {
                   if (!container.save(path, diffTime))
                       logger::out << "failed to save " << path;
                   --m_processing;

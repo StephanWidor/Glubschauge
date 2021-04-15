@@ -1,11 +1,11 @@
 #pragma once
-#include "cv/FlashEffect.h"
-#include "cv/FpsEffect.h"
-#include "cv/GifCreate.h"
-#include "cv/GlubschEffect.h"
-#include "cv/OutputDevice.h"
 #include "qt/ImageTransform.h"
 #include <QAbstractVideoFilter>
+#include <cv/FlashEffect.h>
+#include <cv/FpsEffect.h>
+#include <cv/GifCreate.h>
+#include <cv/GlubschEffect.h>
+#include <cv/OutputDevice.h>
 
 namespace qt {
 
@@ -38,7 +38,7 @@ class ProcessingFilter : public QAbstractVideoFilter
     Q_PROPERTY(bool doLowerHeadDistort READ getDoLowerHeadDistort WRITE setDoLowerHeadDistort NOTIFY doDistortChanged)
     Q_PROPERTY(bool distortAlways READ getDistortAlways WRITE setDistortAlways NOTIFY doDistortChanged)
     Q_PROPERTY(bool showFps READ getShowFps WRITE setShowFps NOTIFY showFpsChanged)
-    Q_PROPERTY(bool gifEnabled MEMBER m_gifEnabled CONSTANT)
+    Q_PROPERTY(bool gifEnabled READ gifEnabled CONSTANT)
     Q_PROPERTY(bool capturingGif READ capturingGif NOTIFY capturingGifChanged)
     Q_PROPERTY(bool processingGif READ processingGif NOTIFY processingGifChanged)
     Q_PROPERTY(bool streamingToOutputPossible MEMBER m_streamingToOutputPossible CONSTANT)
@@ -114,6 +114,8 @@ protected:
 
     bool getShowFps() const { return m_fpsEffect.enabled(); }
 
+    static bool gifEnabled() { return cv::GifCreate::implemented(); }
+
     bool capturingGif() const { return m_gifCreator.collecting(); }
 
     bool processingGif() const { return m_gifCreator.processing(); }
@@ -127,11 +129,6 @@ protected:
     cv::GifCreate m_gifCreator;
     ProcessingFilterRunnable *m_pRunnable = nullptr;
     bool m_captureNext = false;
-#ifdef IMAGEMAGICK_AVAILABLE
-    static constexpr bool m_gifEnabled = true;
-#else
-    static constexpr bool m_gifEnabled = false;
-#endif
     static constexpr bool m_streamingToOutputPossible = cv::OutputDevice::implemented();
     std::unique_ptr<cv::OutputDevice> m_pOutputDevice;
 };

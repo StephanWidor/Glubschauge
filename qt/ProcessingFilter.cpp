@@ -1,8 +1,8 @@
 #include "qt/ProcessingFilter.h"
-#include "FileSystem.h"
-#include "Logger.h"
 #include "qt/Assets.h"
+#include "qt/FileSystem.h"
 #include "qt/ImageConvert.h"
+#include <Logger.h>
 #include <thread>
 
 QVideoFrame qt::ProcessingFilterRunnable::run(QVideoFrame *input, const QVideoSurfaceFormat &, RunFlags)

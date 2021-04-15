@@ -1,11 +1,18 @@
 #include "magick/GifContainer.h"
 
 #ifdef IMAGEMAGICK_AVAILABLE
+#include <Magick++/Image.h>
+#include <Magick++/STL.h>
+
+bool magick::GifContainer::implemented()
+{
+    return true;
+}
 
 void magick::GifContainer::push(const cv::Mat &img)
 {
     assert(img.type() == CV_8UC3);
-    m_images.push_back(Magick::Image(img.cols, img.rows, "BGR", Magick::CharPixel, img.data));
+    m_images.push_back(img);
 }
 
 bool magick::GifContainer::save(const std::string &file, std::chrono::milliseconds duration)
@@ -13,18 +20,24 @@ bool magick::GifContainer::save(const std::string &file, std::chrono::millisecon
     bool retVal = false;
     if (!m_images.empty())
     {
-        const size_t delay = duration.count() / (10u * m_images.size());
-        for (auto &image : m_images)
+        std::vector<Magick::Image> images;
+        images.reserve(m_images.size());
+        std::transform(m_images.begin(), m_images.end(), std::back_inserter(images), [](const auto &img) {
+            return Magick::Image(img.cols, img.rows, "BGR", Magick::CharPixel, img.data);
+        });
+
+        const size_t delay = duration.count() / (10u * images.size());
+        for (auto &image : images)
             image.animationDelay(delay);
         try
         {
-            Magick::writeImages(m_images.begin(), m_images.end(), file);
+            Magick::writeImages(images.begin(), images.end(), file);
             retVal = true;
         }
         catch (...)
         {}
+        m_images.clear();
     }
-    m_images.clear();
     return retVal;
 }
 
@@ -34,6 +47,11 @@ void magick::GifContainer::clear()
 }
 
 #else    // IMAGEMAGICK_AVAILABLE
+
+bool magick::GifContainer::implemented()
+{
+    return false;
+}
 
 void magick::GifContainer::push(const cv::Mat &)
 {}

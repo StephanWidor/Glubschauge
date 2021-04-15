@@ -1,6 +1,5 @@
 #include "qt/FileSystem.h"
-#include "Logger.h"
-
+#include <Logger.h>
 #include <QDir>
 #include <QFile>
 #include <QStandardPaths>
@@ -9,7 +8,6 @@
 #include <QUrl>
 #include <QtAndroid>
 #endif
-
 #include <chrono>
 #include <iomanip>
 #include <sstream>
