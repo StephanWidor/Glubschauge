@@ -53,7 +53,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC OpenCV)
 
 ##### ImageMagick #####
 if(ANDROID)
-    set(MAGICK_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../android/ImageMagick")
+    set(MAGICK_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../ImageMagick/android")
     include_directories(
         ${MAGICK_PATH}/include
         )
