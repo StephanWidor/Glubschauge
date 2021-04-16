@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/browser-tabs.svg</file>
+        <file>icons/camera-flip.svg</file>
+        <file>icons/camera-symbolic.svg</file>
+        <file>icons/camcorder.svg</file>
+        <file>icons/clear.svg</file>
+        <file>icons/properties.svg</file>
+        <file>icons/stop.svg</file>
+    </qresource>
+</RCC>

@@ -1,5 +1,5 @@
 #include "cv/FaceDetection.h"
-#include "Logger.h"
+#include "logger.h"
 #include "cv/ImageUtils.h"
 
 namespace cv {

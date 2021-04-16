@@ -4,6 +4,12 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if(ANDROID)
+    # On Android, static linking of parallel projects doesn't work somehow.
+    # To get around this, we add them as subdirectories, which workd (whyever...)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../OpenCV ${CMAKE_CURRENT_BINARY_DIR}/OpenCV) # swdebug
+endif()
+
 set(HEADERS
     cv/BarrelCreation.h
     cv/FaceDetection.h
@@ -17,7 +23,7 @@ set(HEADERS
     cv/OutputDevice.h
     cv/Utils2D.h
     FpsCounter.h
-    Logger.h
+    logger.h
     magick/GifContainer.h
     NumberSmoothing.h
     )
@@ -35,7 +41,11 @@ set(SOURCES
     )
 
 add_library(${PROJECT_NAME} STATIC ${HEADERS} ${SOURCES})
-target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
+target_include_directories(${PROJECT_NAME} PUBLIC .)
+target_link_libraries(${PROJECT_NAME}
+   PUBLIC
+   OpenCV
+   )
 
 ##### OpenMP #####
 if(ANDROID)
@@ -46,10 +56,9 @@ else()
     if(OpenMP_CXX_FOUND)
         target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
     endif()
+    target_link_libraries(${PROJECT_NAME} PUBLIC OpenCV)
 endif()
 
-##### OpenCV #####
-target_link_libraries(${PROJECT_NAME} PUBLIC OpenCV)
 
 ##### ImageMagick #####
 if(ANDROID)

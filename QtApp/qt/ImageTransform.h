@@ -1,5 +1,4 @@
 #pragma once
-#include <Logger.h>
 #include <QScreen>
 #include <cv/ImageUtils.h>
 

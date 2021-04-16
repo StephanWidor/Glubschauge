@@ -14,7 +14,7 @@ Drawer {
         id: closeButton
         x: parent.width - 1.5 * width
         y: 0.5 * height
-        icon.source: "qrc:/clear.svg"
+        icon.source: "qrc:/icons/clear.svg"
         palette.button: "transparent"
         onClicked: settingsView.close()
     }
@@ -132,7 +132,7 @@ Drawer {
                     Layout.fillWidth: true
                 }
                 RoundButton {
-                    icon.source: "qrc:/camera-flip.svg"
+                    icon.source: "qrc:/icons/camera-flip.svg"
                     palette.button: "transparent"
                     visible: QtMultimedia.availableCameras.length > 1
                     onClicked: cameraView.toggleCamera()

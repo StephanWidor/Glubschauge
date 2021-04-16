@@ -13,5 +13,5 @@ qt::Application::Application(int argc, char *argv[]): m_qApplication(argc, argv)
     qmlRegisterSingletonType<qt::VideoChooser>(
       "stephanwidor.Glubschauge", 1, 0, "VideoChooser",
       [](QQmlEngine *, QJSEngine *) -> QObject * { return new qt::VideoChooser(); });
-    m_qmlEngine.load(QUrl(QLatin1String("qrc:/main.qml")));
+    m_qmlEngine.load(QUrl(QLatin1String("qrc:/qml/main.qml")));
 }

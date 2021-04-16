@@ -1,5 +1,5 @@
 #include "cv/GifCreate.h"
-#include "Logger.h"
+#include "logger.h"
 #include <thread>
 
 cv::GifCreate::~GifCreate()

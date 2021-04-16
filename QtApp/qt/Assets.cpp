@@ -1,9 +1,9 @@
 #include "qt/Assets.h"
 #include "qt/FileSystem.h"
-#include <Logger.h>
 #include <QDir>
 #include <QFile>
 #include <QStandardPaths>
+#include <logger.h>
 
 std::string qt::Assets::provideResource(const std::string &file)
 {

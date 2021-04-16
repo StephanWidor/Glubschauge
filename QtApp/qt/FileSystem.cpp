@@ -1,8 +1,8 @@
 #include "qt/FileSystem.h"
-#include <Logger.h>
 #include <QDir>
 #include <QFile>
 #include <QStandardPaths>
+#include <logger.h>
 #ifdef ANDROID
 #include <QAndroidJniEnvironment>
 #include <QUrl>

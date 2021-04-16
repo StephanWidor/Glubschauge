@@ -1,8 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>main.qml</file>
-        <file>ProcessingCameraView.qml</file>
-        <file>ScanningView.qml</file>
-        <file>SettingsView.qml</file>
-    </qresource>
-</RCC>

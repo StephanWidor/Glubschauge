@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="haarcascade_frontalface_alt2.xml">../appData/haarcascade_frontalface_alt2.xml</file>
+        <file alias="lbfmodel.yaml">../appData/lbfmodel.yaml</file>
+    </qresource>
+</RCC>

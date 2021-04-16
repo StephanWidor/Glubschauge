@@ -21,7 +21,7 @@ Rectangle {
         width: parent.width - 20
         RoundButton {
             id: playVideoButton
-            icon.source: "qrc:/browser-tabs.svg"
+            icon.source: "qrc:/icons/browser-tabs.svg"
             palette.button: "transparent"
             visible: !cameraView.playingVideo
             onClicked: cameraView.playVideo(VideoChooser.chooseVideo())
@@ -31,7 +31,7 @@ Rectangle {
         }
         RoundButton {
             id: settingsButton
-            icon.source: "qrc:/properties.svg"
+            icon.source: "qrc:/icons/properties.svg"
             palette.button: "transparent"
             onClicked: settingsView.open()
         }
@@ -45,7 +45,7 @@ Rectangle {
 
         RoundButton {
             id: toggleCameraButton
-            icon.source: "qrc:/camera-flip.svg"
+            icon.source: "qrc:/icons/camera-flip.svg"
             palette.button: "transparent"
             visible: !cameraView.playingVideo && QtMultimedia.availableCameras.length > 1
             onClicked: cameraView.toggleCamera()
@@ -59,7 +59,7 @@ Rectangle {
                 anchors.fill: parent
                 RoundButton {
                     id: stopVideoButton
-                    icon.source: "qrc:/stop.svg"
+                    icon.source: "qrc:/icons/stop.svg"
                     palette.button: "transparent"
                     visible: cameraView.playingVideo
                     onClicked: cameraView.stopVideo()
@@ -83,7 +83,7 @@ Rectangle {
 
         RoundButton {
             id: captureButton
-            icon.source: "qrc:/camera-symbolic.svg"
+            icon.source: "qrc:/icons/camera-symbolic.svg"
             palette.button: "transparent"
             onClicked: processingFilter.capture()
         }
