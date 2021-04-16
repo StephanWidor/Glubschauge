@@ -1,5 +1,5 @@
 #pragma once
-#if __has_include(<sys/ioctl.h>)
+#if !defined(ANDROID) && __has_include(<sys/ioctl.h>)
 #include <fcntl.h>
 #include <linux/videodev2.h>
 #include <sys/ioctl.h>
