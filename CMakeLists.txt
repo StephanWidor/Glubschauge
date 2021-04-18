@@ -10,10 +10,20 @@ if(ANDROID)
     set(ANDROID_TARGET_SDK_VERSION 30)
 endif()
 
+option(BUILD_QT_APP "Build Qt App requiring Qt dev framework installed" ON)
+include(CMakeDependentOption)
+cmake_dependent_option(BUILD_OCV_HIGHGUI_APP "Build App using OCV's highgui module" ON
+                       "NOT ANDROID" OFF)
+
 # On Android, static linking of parallel projects doesn't work somehow.
 # To get around this, we add them as subdirectories, which works (whyever...)
 if(NOT ANDROID)
     add_subdirectory(OpenCV)
     add_subdirectory(GlubschLib)
 endif()
-add_subdirectory(QtApp)
+if(BUILD_QT_APP)
+    add_subdirectory(QtApp)
+endif()
+if(BUILD_OCV_HIGHGUI_APP)
+    add_subdirectory(OCVHighGuiApp)
+endif()
