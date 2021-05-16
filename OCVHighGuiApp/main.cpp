@@ -1,6 +1,7 @@
 #include <cv/GlubschEffect.h>
 #include <cv/OutputDevice.h>
 #include <opencv2/opencv.hpp>
+#include <optional>
 
 int main(int, char *[])
 {
