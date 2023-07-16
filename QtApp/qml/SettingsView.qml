@@ -29,43 +29,55 @@ Drawer {
             Layout.fillWidth: true
             GridLayout {
                 columns: 2
-                rows: 3
+                rows: 6
                 flow: GridLayout.TopToBottom
-                Switch {
-                    id: eyesDistortSwitch
-                    text: "Eyes"
-                    position: processingFilter.eyesDistort >= 0.5 ? 1 : 0
-                    onClicked: processingFilter.eyesDistort = (position == 0) ? 0.0 : 1.0
+                Slider {
+                    id: eyesDistortSlider
+                    value: processingFilter.eyesDistort
+                    onMoved: processingFilter.eyesDistort = position
                 }
-                Switch {
-                    id: noseDistortSwitch
-                    text: "Nose"
-                    position: processingFilter.noseDistort >= 0.5 ? 1 : 0
-                    onClicked: processingFilter.noseDistort = (position == 0) ? 0.0 : 1.0
+                Slider {
+                    id: noseDistortSlider
+                    value: processingFilter.noseDistort
+                    onMoved: processingFilter.noseDistort = position
                 }
-                Switch {
-                    id: mouthDistortSwitch
-                    text: "Mouth"
-                    position: processingFilter.mouthDistort >= 0.5 ? 1 : 0
-                    onClicked: processingFilter.mouthDistort = (position == 0) ? 0.0 : 1.0
+                Slider {
+                    id: mouthDistortSlider
+                    value: processingFilter.mouthDistort
+                    onMoved: processingFilter.mouthDistort = position
                 }
-                Switch {
-                    id: upperHeadDistortSwitch
-                    text: "Upper Head"
-                    position: processingFilter.upperHeadDistort >= 0.5 ? 1 : 0
-                    onClicked: processingFilter.upperHeadDistort = (position == 0) ? 0.0 : 1.0
+                Slider {
+                    id: upperHeadDistortSlider
+                    value: processingFilter.upperHeadDistort
+                    onMoved: processingFilter.upperHeadDistort = position
                 }
-                Switch {
-                    id: lowerHeadDistortSwitch
-                    text: "Lower Head"
-                    position: processingFilter.lowerHeadDistort >= 0.5 ? 1 : 0
-                    onClicked: processingFilter.lowerHeadDistort = (position == 0) ? 0.0 : 1.0
+                Slider {
+                    id: lowerHeadDistortSlider
+                    value: processingFilter.lowerHeadDistort
+                    onMoved: processingFilter.lowerHeadDistort = position
                 }
                 Switch {
                     id: distortAlwaysSwitch
-                    text: "Distort Always"
                     position: processingFilter.distortAlways ? 1 : 0
                     onClicked: processingFilter.distortAlways = (position != 0)
+                }
+                Label {
+                    text: "Eyes"
+                }
+                Label {
+                    text: "Nose"
+                }
+                Label {
+                    text: "Mouth"
+                }
+                Label {
+                    text: "Upper Head"
+                }
+                Label {
+                    text: "Lower Head"
+                }
+                Label {
+                    text: "Distort Always"
                 }
             }
         }
