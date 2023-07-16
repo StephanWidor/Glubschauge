@@ -12,8 +12,7 @@ int main(int, char *[])
     cv::GlubschEffect glubschEffect("haarcascade_frontalface_alt2.xml", "lbfmodel.yaml");
     std::optional<cv::OutputDevice> outputStream;
 
-    const auto toggleDistort = [&glubschEffect](cv::FaceDistortionType type) {
-        glubschEffect.setDistort(type, glubschEffect.getDistort(type) != 0.0 ? 0.0 : 1.0);
+    const auto printDistorts = [&]() {
         std::cout << "Distortions:\n";
         std::cout << "\tEyes: " << glubschEffect.getDistort(cv::FaceDistortionType::Eyes) << std::endl;
         std::cout << "\tNose: " << glubschEffect.getDistort(cv::FaceDistortionType::Nose) << std::endl;
@@ -22,9 +21,23 @@ int main(int, char *[])
         std::cout << "\tLower Head: " << glubschEffect.getDistort(cv::FaceDistortionType::LowerHead) << std::endl;
     };
 
+    const auto incrementDistort = [&](cv::FaceDistortionType type) {
+        glubschEffect.increment(type);
+        printDistorts();
+    };
+    const auto decrementDistort = [&](cv::FaceDistortionType type) {
+        glubschEffect.decrement(type);
+        printDistorts();
+    };
+
     const auto toggleDistortAlways = [&glubschEffect]() {
         glubschEffect.setDistortAlways(!glubschEffect.getDistortAlways());
         std::cout << "Distort always: " << glubschEffect.getDistortAlways() << std::endl;
+    };
+
+    const auto toggleDrawLandmarks = [&glubschEffect]() {
+        glubschEffect.setDrawLandmarks(!glubschEffect.getDrawLandmarks());
+        std::cout << "Drawe Landmarks: " << glubschEffect.getDrawLandmarks() << std::endl;
     };
 
     const auto toggleOutputStream = [&outputStream]() {
@@ -47,20 +60,38 @@ int main(int, char *[])
             case 'a':
                 toggleDistortAlways();
                 break;
+            case 'd':
+                toggleDrawLandmarks();
+                break;
             case 'e':
-                toggleDistort(cv::FaceDistortionType::Eyes);
+                decrementDistort(cv::FaceDistortionType::Eyes);
+                break;
+            case 'E':
+                incrementDistort(cv::FaceDistortionType::Eyes);
                 break;
             case 'n':
-                toggleDistort(cv::FaceDistortionType::Nose);
+                decrementDistort(cv::FaceDistortionType::Nose);
+                break;
+            case 'N':
+                incrementDistort(cv::FaceDistortionType::Nose);
                 break;
             case 'm':
-                toggleDistort(cv::FaceDistortionType::Mouth);
+                decrementDistort(cv::FaceDistortionType::Mouth);
+                break;
+            case 'M':
+                incrementDistort(cv::FaceDistortionType::Mouth);
                 break;
             case 'u':
-                toggleDistort(cv::FaceDistortionType::UpperHead);
+                decrementDistort(cv::FaceDistortionType::UpperHead);
+                break;
+            case 'U':
+                incrementDistort(cv::FaceDistortionType::UpperHead);
                 break;
             case 'l':
-                toggleDistort(cv::FaceDistortionType::LowerHead);
+                decrementDistort(cv::FaceDistortionType::LowerHead);
+                break;
+            case 'L':
+                incrementDistort(cv::FaceDistortionType::LowerHead);
                 break;
             case 's':
                 toggleOutputStream();
