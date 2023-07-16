@@ -80,12 +80,12 @@ void qt::ProcessingFilter::setShowLandmarks(bool show)
     }
 }
 
-void qt::ProcessingFilter::setDoDistort(cv::FaceDistortionType type, bool distort)
+void qt::ProcessingFilter::setDistort(cv::FaceDistortionType type, double factor)
 {
-    if (m_glubschEffect.getDoDistort(type) != distort)
+    if (m_glubschEffect.getDistort(type) != factor)
     {
-        m_glubschEffect.setDoDistort(type, distort);
-        emit doDistortChanged();
+        m_glubschEffect.setDistort(type, factor);
+        emit distortChanged();
     }
 }
 

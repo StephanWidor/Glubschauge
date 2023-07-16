@@ -13,13 +13,13 @@ int main(int, char *[])
     std::optional<cv::OutputDevice> outputStream;
 
     const auto toggleDistort = [&glubschEffect](cv::FaceDistortionType type) {
-        glubschEffect.setDoDistort(type, !glubschEffect.getDoDistort(type));
+        glubschEffect.setDistort(type, glubschEffect.getDistort(type) != 0.0 ? 0.0 : 1.0);
         std::cout << "Distortions:\n";
-        std::cout << "\tEyes: " << glubschEffect.getDoDistort(cv::FaceDistortionType::Eyes) << std::endl;
-        std::cout << "\tNose: " << glubschEffect.getDoDistort(cv::FaceDistortionType::Nose) << std::endl;
-        std::cout << "\tMouth: " << glubschEffect.getDoDistort(cv::FaceDistortionType::Mouth) << std::endl;
-        std::cout << "\tUpper Head: " << glubschEffect.getDoDistort(cv::FaceDistortionType::UpperHead) << std::endl;
-        std::cout << "\tLower Head: " << glubschEffect.getDoDistort(cv::FaceDistortionType::LowerHead) << std::endl;
+        std::cout << "\tEyes: " << glubschEffect.getDistort(cv::FaceDistortionType::Eyes) << std::endl;
+        std::cout << "\tNose: " << glubschEffect.getDistort(cv::FaceDistortionType::Nose) << std::endl;
+        std::cout << "\tMouth: " << glubschEffect.getDistort(cv::FaceDistortionType::Mouth) << std::endl;
+        std::cout << "\tUpper Head: " << glubschEffect.getDistort(cv::FaceDistortionType::UpperHead) << std::endl;
+        std::cout << "\tLower Head: " << glubschEffect.getDistort(cv::FaceDistortionType::LowerHead) << std::endl;
     };
 
     const auto toggleDistortAlways = [&glubschEffect]() {

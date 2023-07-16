@@ -22,17 +22,21 @@ public:
 
     bool getDistortAlways() const { return m_distortAlways; }
 
-    void setDoDistort(FaceDistortionType type, bool distort)
+    void setDistort(const FaceDistortionType type, double factor) { set(m_distortions, type, factor); }
+
+    void increment(FaceDistortionType type)
     {
-        if (distort)
-            m_distortionTypes |= type;
-        else
-            m_distortionTypes &= ~type;
+        const auto newValue = (std::floor(get(m_distortions, type) / incrementStep) + 1.0) * incrementStep;
+        set(m_distortions, type, newValue);
     }
 
-    bool getDoDistort() const { return m_distortionTypes != FaceDistortionType::None; }
+    void decrement(FaceDistortionType type)
+    {
+        const auto newValue = (std::floor(get(m_distortions, type) / incrementStep) - 1.0) * incrementStep;
+        set(m_distortions, type, newValue);
+    }
 
-    bool getDoDistort(FaceDistortionType type) const { return m_distortionTypes & type; }
+    double getDistort(const FaceDistortionType type) const { return get(m_distortions, type); }
 
 private:
     FaceDetection m_faceDetection;
@@ -40,7 +44,8 @@ private:
     static const inline Scalar g_drawColor = Scalar(255, 200, 0);
     bool m_drawLandmarks = false;
     bool m_distortAlways = false;
-    unsigned m_distortionTypes = FaceDistortionType::Eyes | FaceDistortionType::Mouth;
+    FaceDistortions m_distortions = defaultFaceDistortions;
+    static constexpr double incrementStep = 0.1;
 };
 
 }    // namespace cv

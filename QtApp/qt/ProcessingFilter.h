@@ -31,12 +31,12 @@ class ProcessingFilter : public QAbstractVideoFilter
     Q_PROPERTY(
       bool doCameraTransform READ getDoCameraTransform WRITE setDoCameraTransform NOTIFY doCameraTransformChanged)
     Q_PROPERTY(bool showLandmarks READ getShowLandmarks WRITE setShowLandmarks NOTIFY showLandmarksChanged)
-    Q_PROPERTY(bool doEyesDistort READ getDoEyesDistort WRITE setDoEyesDistort NOTIFY doDistortChanged)
-    Q_PROPERTY(bool doNoseDistort READ getDoNoseDistort WRITE setDoNoseDistort NOTIFY doDistortChanged)
-    Q_PROPERTY(bool doMouthDistort READ getDoMouthDistort WRITE setDoMouthDistort NOTIFY doDistortChanged)
-    Q_PROPERTY(bool doUpperHeadDistort READ getDoUpperHeadDistort WRITE setDoUpperHeadDistort NOTIFY doDistortChanged)
-    Q_PROPERTY(bool doLowerHeadDistort READ getDoLowerHeadDistort WRITE setDoLowerHeadDistort NOTIFY doDistortChanged)
-    Q_PROPERTY(bool distortAlways READ getDistortAlways WRITE setDistortAlways NOTIFY doDistortChanged)
+    Q_PROPERTY(double eyesDistort READ getEyesDistort WRITE setEyesDistort NOTIFY distortChanged)
+    Q_PROPERTY(double noseDistort READ getNoseDistort WRITE setNoseDistort NOTIFY distortChanged)
+    Q_PROPERTY(double mouthDistort READ getMouthDistort WRITE setMouthDistort NOTIFY distortChanged)
+    Q_PROPERTY(double upperHeadDistort READ getUpperHeadDistort WRITE setUpperHeadDistort NOTIFY distortChanged)
+    Q_PROPERTY(double lowerHeadDistort READ getLowerHeadDistort WRITE setLowerHeadDistort NOTIFY distortChanged)
+    Q_PROPERTY(bool distortAlways READ getDistortAlways WRITE setDistortAlways NOTIFY distortChanged)
     Q_PROPERTY(bool showFps READ getShowFps WRITE setShowFps NOTIFY showFpsChanged)
     Q_PROPERTY(bool gifEnabled READ gifEnabled CONSTANT)
     Q_PROPERTY(bool capturingGif READ capturingGif NOTIFY capturingGifChanged)
@@ -55,7 +55,7 @@ signals:
     void rotationChanged();
     void doCameraTransformChanged();
     void showLandmarksChanged();
-    void doDistortChanged();
+    void distortChanged();
     void showFpsChanged();
     void capturingGifChanged();
     void processingGifChanged();
@@ -84,31 +84,31 @@ protected:
 
     bool getShowLandmarks() const { return m_glubschEffect.getDrawLandmarks(); }
 
-    void setDoEyesDistort(bool distort) { setDoDistort(cv::FaceDistortionType::Eyes, distort); }
+    void setEyesDistort(double factor) { setDistort(cv::FaceDistortionType::Eyes, factor); }
 
-    bool getDoEyesDistort() const { return m_glubschEffect.getDoDistort(cv::FaceDistortionType::Eyes); }
+    double getEyesDistort() const { return m_glubschEffect.getDistort(cv::FaceDistortionType::Eyes); }
 
-    void setDoNoseDistort(bool distort) { setDoDistort(cv::FaceDistortionType::Nose, distort); }
+    void setNoseDistort(double factor) { setDistort(cv::FaceDistortionType::Nose, factor); }
 
-    bool getDoNoseDistort() const { return m_glubschEffect.getDoDistort(cv::FaceDistortionType::Nose); }
+    double getNoseDistort() const { return m_glubschEffect.getDistort(cv::FaceDistortionType::Nose); }
 
-    void setDoMouthDistort(bool distort) { setDoDistort(cv::FaceDistortionType::Mouth, distort); }
+    void setMouthDistort(double factor) { setDistort(cv::FaceDistortionType::Mouth, factor); }
 
     void setDistortAlways(bool distort) { m_glubschEffect.setDistortAlways(distort); }
 
-    bool getDoMouthDistort() const { return m_glubschEffect.getDoDistort(cv::FaceDistortionType::Mouth); }
+    double getMouthDistort() const { return m_glubschEffect.getDistort(cv::FaceDistortionType::Mouth); }
 
-    void setDoUpperHeadDistort(bool distort) { setDoDistort(cv::FaceDistortionType::UpperHead, distort); }
+    void setUpperHeadDistort(double factor) { setDistort(cv::FaceDistortionType::UpperHead, factor); }
 
-    bool getDoUpperHeadDistort() const { return m_glubschEffect.getDoDistort(cv::FaceDistortionType::UpperHead); }
+    double getUpperHeadDistort() const { return m_glubschEffect.getDistort(cv::FaceDistortionType::UpperHead); }
 
-    void setDoLowerHeadDistort(bool distort) { setDoDistort(cv::FaceDistortionType::LowerHead, distort); }
+    void setLowerHeadDistort(double factor) { setDistort(cv::FaceDistortionType::LowerHead, factor); }
 
-    bool getDoLowerHeadDistort() const { return m_glubschEffect.getDoDistort(cv::FaceDistortionType::LowerHead); }
+    double getLowerHeadDistort() const { return m_glubschEffect.getDistort(cv::FaceDistortionType::LowerHead); }
 
     bool getDistortAlways() const { return m_glubschEffect.getDistortAlways(); }
 
-    void setDoDistort(cv::FaceDistortionType type, bool distort);
+    void setDistort(cv::FaceDistortionType type, double factor);
 
     void setShowFps(bool show);
 

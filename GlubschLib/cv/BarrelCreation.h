@@ -14,7 +14,7 @@ class BarrelCreation
 public:
     static std::vector<cv::ImageUtils::BarrelInfo>
       createBarrelInfos(const std::vector<FaceDetection::Landmarks> &landmarks, double power,
-                        unsigned distortionTypes = static_cast<unsigned>(FaceDistortionType::Eyes));
+                        const FaceDistortions &distortions);
 
     static ImageUtils::BarrelInfo createBarrelInfo(const FaceDetection::Landmarks &landmarks, double power);
 };

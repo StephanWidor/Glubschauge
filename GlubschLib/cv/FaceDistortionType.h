@@ -1,64 +1,35 @@
 #pragma once
+#include <algorithm>
+#include <array>
+#include <cassert>
+#include <cstddef>
 
 namespace cv {
 
-// swdebug: Maybe we shouldn't use strong typed enum class, so we wouldn't need all those operators...
-enum class FaceDistortionType : unsigned
+enum class FaceDistortionType : size_t
 {
-    None = 0,
-    Eyes = 1,
-    Nose = 2,
-    Mouth = 4,
-    UpperHead = 8,
-    LowerHead = 16
+    Eyes = 0,
+    Nose,
+    Mouth,
+    UpperHead,
+    LowerHead,
+    Num
 };
-constexpr unsigned operator~(FaceDistortionType type)
+
+using FaceDistortions = std::array<double, static_cast<size_t>(FaceDistortionType::Num)>;
+
+constexpr double get(const FaceDistortions &distortions, const FaceDistortionType &type)
 {
-    return ~static_cast<unsigned>(type);
+    assert(type < FaceDistortionType::Num);
+    return distortions[static_cast<size_t>(type)];
 }
-constexpr unsigned operator&=(unsigned &typeAsUnsigned, FaceDistortionType type)
+
+constexpr void set(FaceDistortions &distortions, const FaceDistortionType &type, const double factor)
 {
-    return typeAsUnsigned &= static_cast<unsigned>(type);
+    assert(type < FaceDistortionType::Num);
+    distortions[static_cast<size_t>(type)] = std::clamp(factor, 0.0, 1.0);
 }
-constexpr unsigned operator&(unsigned oredTypes, FaceDistortionType type)
-{
-    return oredTypes & static_cast<unsigned>(type);
-}
-constexpr unsigned operator&(FaceDistortionType type, unsigned oredTypes)
-{
-    return oredTypes & type;
-}
-constexpr unsigned operator|=(unsigned &typeAsUnsigned, FaceDistortionType type)
-{
-    return typeAsUnsigned |= static_cast<unsigned>(type);
-}
-constexpr unsigned operator|(unsigned oredTypes, FaceDistortionType type)
-{
-    return oredTypes | static_cast<unsigned>(type);
-}
-constexpr unsigned operator|(FaceDistortionType type, unsigned oredTypes)
-{
-    return oredTypes | type;
-}
-constexpr unsigned operator|(FaceDistortionType type0, FaceDistortionType type1)
-{
-    return static_cast<unsigned>(type0) | type1;
-}
-constexpr bool operator==(unsigned typeAsUnsigned, FaceDistortionType type)
-{
-    return typeAsUnsigned == static_cast<unsigned>(type);
-}
-constexpr bool operator==(FaceDistortionType type, unsigned typeAsUnsigned)
-{
-    return typeAsUnsigned == type;
-}
-constexpr bool operator!=(unsigned typeAsUnsigned, FaceDistortionType type)
-{
-    return !(typeAsUnsigned == type);
-}
-constexpr bool operator!=(FaceDistortionType type, unsigned typeAsUnsigned)
-{
-    return !(typeAsUnsigned == type);
-}
+
+constexpr FaceDistortions defaultFaceDistortions{1.0, 0.0, 1.0, 0.0, 0.0};
 
 }    // namespace cv

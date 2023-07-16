@@ -6,34 +6,41 @@ namespace cv {
 
 std::vector<cv::ImageUtils::BarrelInfo>
   BarrelCreation::createBarrelInfos(const std::vector<FaceDetection::Landmarks> &landmarks, double power,
-                                    unsigned distortionTypes)
+                                    const FaceDistortions &distortions)
 {
     std::vector<cv::ImageUtils::BarrelInfo> barrelInfos;
     using LandmarksType = FaceDetection::LandmarksType;
     for (const auto &faceLandmarks : landmarks)
     {
-        if (distortionTypes & FaceDistortionType::Eyes)
+        if (const auto factor = get(distortions, FaceDistortionType::Eyes); factor > 0.0)
         {
+            const auto scaledPower = factor * power;
             barrelInfos.push_back(
-              createBarrelInfo(FaceDetection::filter(faceLandmarks, LandmarksType::LeftEye), power));
+              createBarrelInfo(FaceDetection::filter(faceLandmarks, LandmarksType::LeftEye), scaledPower));
             barrelInfos.push_back(
-              createBarrelInfo(FaceDetection::filter(faceLandmarks, LandmarksType::RightEye), power));
+              createBarrelInfo(FaceDetection::filter(faceLandmarks, LandmarksType::RightEye), scaledPower));
         }
-        if (distortionTypes & FaceDistortionType::Nose)
-            barrelInfos.push_back(createBarrelInfo(
-              FaceDetection::filter(faceLandmarks, LandmarksType::NoseBridge, LandmarksType::LowerNose), power));
-        if (distortionTypes & FaceDistortionType::Mouth)
-            barrelInfos.push_back(
-              createBarrelInfo(FaceDetection::filter(faceLandmarks, LandmarksType::InnerLip), power));
-        if (distortionTypes & FaceDistortionType::UpperHead)
+        if (const auto factor = get(distortions, FaceDistortionType::Nose); factor > 0.0)
         {
             barrelInfos.push_back(createBarrelInfo(
-              FaceDetection::filter(faceLandmarks, LandmarksType::LeftEyebrow, LandmarksType::RightEyebrow), power));
+              FaceDetection::filter(faceLandmarks, LandmarksType::NoseBridge, LandmarksType::LowerNose),
+              factor * power));
         }
-        if (distortionTypes & FaceDistortionType::LowerHead)
+        if (const auto factor = get(distortions, FaceDistortionType::Mouth); factor > 0.0)
+        {
+            barrelInfos.push_back(
+              createBarrelInfo(FaceDetection::filter(faceLandmarks, LandmarksType::InnerLip), factor * power));
+        }
+        if (const auto factor = get(distortions, FaceDistortionType::UpperHead); factor > 0.0)
+        {
+            barrelInfos.push_back(createBarrelInfo(
+              FaceDetection::filter(faceLandmarks, LandmarksType::LeftEyebrow, LandmarksType::RightEyebrow),
+              factor * power));
+        }
+        if (const auto factor = get(distortions, FaceDistortionType::LowerHead); factor > 0.0)
         {
             const auto jaw = FaceDetection::filter(faceLandmarks, LandmarksType::JawLine);
-            barrelInfos.push_back(createBarrelInfo({jaw.begin() + 4u, jaw.end() - 4u}, power));
+            barrelInfos.push_back(createBarrelInfo({jaw.begin() + 4u, jaw.end() - 4u}, factor * power));
         }
     }
     return barrelInfos;

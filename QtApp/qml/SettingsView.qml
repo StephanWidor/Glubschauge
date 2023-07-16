@@ -34,38 +34,38 @@ Drawer {
                 Switch {
                     id: eyesDistortSwitch
                     text: "Eyes"
-                    position: processingFilter.doEyesDistort? 1 : 0
-                    onClicked: processingFilter.doEyesDistort = (position!=0)
+                    position: processingFilter.eyesDistort >= 0.5 ? 1 : 0
+                    onClicked: processingFilter.eyesDistort = (position == 0) ? 0.0 : 1.0
                 }
                 Switch {
                     id: noseDistortSwitch
                     text: "Nose"
-                    position: processingFilter.doNoseDistort? 1 : 0
-                    onClicked: processingFilter.doNoseDistort = (position!=0)
+                    position: processingFilter.noseDistort >= 0.5 ? 1 : 0
+                    onClicked: processingFilter.noseDistort = (position == 0) ? 0.0 : 1.0
                 }
                 Switch {
                     id: mouthDistortSwitch
                     text: "Mouth"
-                    position: processingFilter.doMouthDistort? 1 : 0
-                    onClicked: processingFilter.doMouthDistort = (position!=0)
+                    position: processingFilter.mouthDistort >= 0.5 ? 1 : 0
+                    onClicked: processingFilter.mouthDistort = (position == 0) ? 0.0 : 1.0
                 }
                 Switch {
                     id: upperHeadDistortSwitch
                     text: "Upper Head"
-                    position: processingFilter.doUpperHeadDistort? 1 : 0
-                    onClicked: processingFilter.doUpperHeadDistort = (position!=0)
+                    position: processingFilter.upperHeadDistort >= 0.5 ? 1 : 0
+                    onClicked: processingFilter.upperHeadDistort = (position == 0) ? 0.0 : 1.0
                 }
                 Switch {
                     id: lowerHeadDistortSwitch
                     text: "Lower Head"
-                    position: processingFilter.doLowerHeadDistort? 1 : 0
-                    onClicked: processingFilter.doLowerHeadDistort = (position!=0)
+                    position: processingFilter.lowerHeadDistort >= 0.5 ? 1 : 0
+                    onClicked: processingFilter.lowerHeadDistort = (position == 0) ? 0.0 : 1.0
                 }
                 Switch {
                     id: distortAlwaysSwitch
                     text: "Distort Always"
-                    position: processingFilter.distortAlways? 1 : 0
-                    onClicked: processingFilter.distortAlways = (position!=0)
+                    position: processingFilter.distortAlways ? 1 : 0
+                    onClicked: processingFilter.distortAlways = (position != 0)
                 }
             }
         }
@@ -77,8 +77,8 @@ Drawer {
                 Switch {
                     id: showLandmarksSwitch
                     text: "Facemarks"
-                    position: processingFilter.showLandmarks? 1 : 0
-                    onClicked: processingFilter.showLandmarks = (position!=0)
+                    position: processingFilter.showLandmarks ? 1 : 0
+                    onClicked: processingFilter.showLandmarks = (position != 0)
                 }
                 Item {
                     Layout.fillWidth: true
@@ -86,8 +86,8 @@ Drawer {
                 Switch {
                     id: showFpsSwitch
                     text: "FPS"
-                    position: processingFilter.showFps? 1 : 0
-                    onClicked: processingFilter.showFps = (position!=0)
+                    position: processingFilter.showFps ? 1 : 0
+                    onClicked: processingFilter.showFps = (position != 0)
                 }
             }
         }
@@ -104,24 +104,27 @@ Drawer {
                         id: model
                     }
                     onCurrentTextChanged: {
-                        if(!resolutionComboBox.fillingList)
-                            cameraView.setResolution(resolutionComboBox.currentText)
+                        if (!resolutionComboBox.fillingList)
+                            cameraView.setResolution(
+                                        resolutionComboBox.currentText)
                     }
                     Connections {
                         target: cameraView
-                        function onCameraStatusChanged()
-                        {
-                            if(cameraView.cameraStatus !== Camera.ActiveStatus)
+                        function onCameraStatusChanged() {
+                            if (cameraView.cameraStatus !== Camera.ActiveStatus)
                                 return
                             resolutionComboBox.fillingList = true
                             model.clear()
-                            var currentResolution = cameraView.resolution.width.toString() + "x" + cameraView.resolution.height.toString()
+                            var currentResolution = cameraView.resolution.width.toString(
+                                        ) + "x" + cameraView.resolution.height.toString()
                             var list = cameraView.availableResolutions()
-                            for(var i=0;i<list.length;++i)
-                            {
-                                var resolution = list[i].width.toString() + "x" + list[i].height.toString()
-                                model.append({resolution})
-                                if(resolution === currentResolution)
+                            for (var i = 0; i < list.length; ++i) {
+                                var resolution = list[i].width.toString(
+                                            ) + "x" + list[i].height.toString()
+                                model.append({
+                                                 "resolution": resolution
+                                             })
+                                if (resolution === currentResolution)
                                     resolutionComboBox.currentIndex = i
                             }
                             resolutionComboBox.fillingList = false
@@ -148,12 +151,13 @@ Drawer {
                 Switch {
                     id: streamToOutputDeviceSwitch
                     text: "Stream to "
-                    position: processingFilter.streamingToOutputDevice? 1 : 0
+                    position: processingFilter.streamingToOutputDevice ? 1 : 0
                     onClicked: {
-                        if(position==0)
+                        if (position == 0)
                             processingFilter.stopStreamingToOutputDevice()
                         else
-                            processingFilter.streamToOutputDevice(outputDeviceEdit.text)
+                            processingFilter.streamToOutputDevice(
+                                        outputDeviceEdit.text)
                     }
                 }
                 Item {
@@ -164,7 +168,7 @@ Drawer {
                     border.color: "darkgray"
                     border.width: 2
                     width: outputDeviceEdit.width + 10
-                    height: outputDeviceEdit.height +10
+                    height: outputDeviceEdit.height + 10
                     TextEdit {
                         id: outputDeviceEdit
                         anchors.centerIn: parent
