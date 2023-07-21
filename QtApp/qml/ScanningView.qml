@@ -47,7 +47,8 @@ Rectangle {
             id: toggleCameraButton
             icon.source: "qrc:/icons/camera-flip.svg"
             palette.button: "transparent"
-            visible: !cameraView.playingVideo && QtMultimedia.availableCameras.length > 1
+            visible: !cameraView.playingVideo
+                     && QtMultimedia.availableCameras.length > 1
             onClicked: cameraView.toggleCamera()
         }
 
@@ -96,7 +97,7 @@ Rectangle {
                 id: gifButton
                 enabled: !processingFilter.capturingGif
                 text: "gif"
-                palette.button: enabled? "transparent" : "red"
+                palette.button: enabled ? "transparent" : "red"
                 onClicked: processingFilter.captureGif()
             }
             BusyIndicator {
@@ -114,6 +115,7 @@ Rectangle {
         edge: Qt.TopEdge
         width: parent.width
         height: parent.height
+        opacity: 0.5
         cameraView: cameraView
     }
 }

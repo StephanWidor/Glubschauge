@@ -6,8 +6,6 @@ import stephanwidor.Glubschauge 1.0
 
 Drawer {
     id: settingsView
-    opacity: 0.8
-
     property ProcessingCameraView cameraView
 
     RoundButton {
