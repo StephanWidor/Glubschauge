@@ -82,37 +82,39 @@ protected:
 
     void setShowLandmarks(bool show);
 
-    bool getShowLandmarks() const { return m_glubschEffect.getDrawLandmarks(); }
+    bool getShowLandmarks() const { return m_glubschEffect.config.drawLandmarks; }
 
-    void setEyesDistort(double factor) { setDistort(cv::FaceDistortionType::Eyes, factor); }
+    void setDistortAlways(bool distort);
 
-    double getEyesDistort() const { return m_glubschEffect.getDistort(cv::FaceDistortionType::Eyes); }
-
-    void setNoseDistort(double factor) { setDistort(cv::FaceDistortionType::Nose, factor); }
-
-    double getNoseDistort() const { return m_glubschEffect.getDistort(cv::FaceDistortionType::Nose); }
-
-    void setMouthDistort(double factor) { setDistort(cv::FaceDistortionType::Mouth, factor); }
-
-    void setDistortAlways(bool distort) { m_glubschEffect.setDistortAlways(distort); }
-
-    double getMouthDistort() const { return m_glubschEffect.getDistort(cv::FaceDistortionType::Mouth); }
-
-    void setUpperHeadDistort(double factor) { setDistort(cv::FaceDistortionType::UpperHead, factor); }
-
-    double getUpperHeadDistort() const { return m_glubschEffect.getDistort(cv::FaceDistortionType::UpperHead); }
-
-    void setLowerHeadDistort(double factor) { setDistort(cv::FaceDistortionType::LowerHead, factor); }
-
-    double getLowerHeadDistort() const { return m_glubschEffect.getDistort(cv::FaceDistortionType::LowerHead); }
-
-    bool getDistortAlways() const { return m_glubschEffect.getDistortAlways(); }
-
-    void setDistort(cv::FaceDistortionType type, double factor);
+    bool getDistortAlways() const { return m_glubschEffect.config.distortAlways; }
 
     void setShowFps(bool show);
 
     bool getShowFps() const { return m_fpsEffect.enabled(); }
+
+    void setDistort(cv::FaceDistortionType type, double factor);
+
+    double getDistort(cv::FaceDistortionType type) const { return cv::get(m_glubschEffect.config.distortions, type); }
+
+    void setEyesDistort(double factor) { setDistort(cv::FaceDistortionType::Eyes, factor); }
+
+    double getEyesDistort() const { return getDistort(cv::FaceDistortionType::Eyes); }
+
+    void setNoseDistort(double factor) { setDistort(cv::FaceDistortionType::Nose, factor); }
+
+    double getNoseDistort() const { return getDistort(cv::FaceDistortionType::Nose); }
+
+    void setMouthDistort(double factor) { setDistort(cv::FaceDistortionType::Mouth, factor); }
+
+    double getMouthDistort() const { return getDistort(cv::FaceDistortionType::Mouth); }
+
+    void setUpperHeadDistort(double factor) { setDistort(cv::FaceDistortionType::UpperHead, factor); }
+
+    double getUpperHeadDistort() const { return getDistort(cv::FaceDistortionType::UpperHead); }
+
+    void setLowerHeadDistort(double factor) { setDistort(cv::FaceDistortionType::LowerHead, factor); }
+
+    double getLowerHeadDistort() const { return getDistort(cv::FaceDistortionType::LowerHead); }
 
     static bool gifEnabled() { return cv::GifCreate::implemented(); }
 

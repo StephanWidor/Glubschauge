@@ -73,20 +73,17 @@ void qt::ProcessingFilter::captureGif()
 
 void qt::ProcessingFilter::setShowLandmarks(bool show)
 {
-    if (m_glubschEffect.getDrawLandmarks() != show)
+    if (m_glubschEffect.config.drawLandmarks != show)
     {
-        m_glubschEffect.setDrawLandmarks(show);
+        m_glubschEffect.config.drawLandmarks = show;
         emit showLandmarksChanged();
     }
 }
 
-void qt::ProcessingFilter::setDistort(cv::FaceDistortionType type, double factor)
+void qt::ProcessingFilter::setDistortAlways(bool distort)
 {
-    if (m_glubschEffect.getDistort(type) != factor)
-    {
-        m_glubschEffect.setDistort(type, factor);
-        emit distortChanged();
-    }
+    if (m_glubschEffect.config.distortAlways != distort)
+        m_glubschEffect.config.distortAlways = distort;
 }
 
 void qt::ProcessingFilter::setShowFps(bool show)
@@ -95,6 +92,15 @@ void qt::ProcessingFilter::setShowFps(bool show)
     {
         m_fpsEffect.setEnabled(show);
         emit showFpsChanged();
+    }
+}
+
+void qt::ProcessingFilter::setDistort(cv::FaceDistortionType type, double factor)
+{
+    if (getDistort(type) != factor)
+    {
+        cv::set(m_glubschEffect.config.distortions, type, factor);
+        emit distortChanged();
     }
 }
 

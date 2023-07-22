@@ -6,12 +6,12 @@ namespace cv {
 
 void GlubschEffect::process(Mat &io_img)
 {
-    const auto doDistort =
-      !std::all_of(m_distortions.begin(), m_distortions.end(), [](const auto factor) { return factor > 0.0; });
-    if (m_drawLandmarks || doDistort)
+    const auto doDistort = !std::all_of(config.distortions.begin(), config.distortions.end(),
+                                        [](const auto factor) { return factor > 0.0; });
+    if (config.drawLandmarks || doDistort)
     {
         const auto [faceBBoxes, landmarks] = m_faceDetection.detect(io_img);
-        if (m_drawLandmarks)
+        if (config.drawLandmarks)
         {
             drawContours(io_img, Utils2D::toContours(faceBBoxes), -1, g_drawColor, 2);
             for (const auto &faceLandmarks : landmarks)
@@ -22,9 +22,9 @@ void GlubschEffect::process(Mat &io_img)
         }
         if (doDistort)
         {
-            const auto power = m_smoothing.push(m_distortAlways ? 1.0 : 4.0 * MouthOpen::calcAverage(landmarks));
+            const auto power = m_smoothing.push(config.distortAlways ? 1.0 : 4.0 * MouthOpen::calcAverage(landmarks));
             if (power > 0.0)
-                ImageUtils::distort(io_img, BarrelCreation::createBarrelInfos(landmarks, power, m_distortions));
+                ImageUtils::distort(io_img, BarrelCreation::createBarrelInfos(landmarks, power, config.distortions));
         }
     }
 }

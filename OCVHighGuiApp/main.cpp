@@ -10,34 +10,39 @@ int main(int, char *[])
     cv::Mat frame;
     bool run{true};
     cv::GlubschEffect glubschEffect("haarcascade_frontalface_alt2.xml", "lbfmodel.yaml");
+    auto &config = glubschEffect.config;
     std::optional<cv::OutputDevice> outputStream;
 
-    const auto printDistorts = [&]() {
+    const auto getDistort = [&](const cv::FaceDistortionType type) -> double {
+        return cv::get(config.distortions, type);
+    };
+
+    const auto printDistortions = [&]() {
         std::cout << "Distortions:\n";
-        std::cout << "\tEyes: " << glubschEffect.getDistort(cv::FaceDistortionType::Eyes) << std::endl;
-        std::cout << "\tNose: " << glubschEffect.getDistort(cv::FaceDistortionType::Nose) << std::endl;
-        std::cout << "\tMouth: " << glubschEffect.getDistort(cv::FaceDistortionType::Mouth) << std::endl;
-        std::cout << "\tUpper Head: " << glubschEffect.getDistort(cv::FaceDistortionType::UpperHead) << std::endl;
-        std::cout << "\tLower Head: " << glubschEffect.getDistort(cv::FaceDistortionType::LowerHead) << std::endl;
+        std::cout << "\tEyes: " << getDistort(cv::FaceDistortionType::Eyes) << std::endl;
+        std::cout << "\tNose: " << getDistort(cv::FaceDistortionType::Nose) << std::endl;
+        std::cout << "\tMouth: " << getDistort(cv::FaceDistortionType::Mouth) << std::endl;
+        std::cout << "\tUpper Head: " << getDistort(cv::FaceDistortionType::UpperHead) << std::endl;
+        std::cout << "\tLower Head: " << getDistort(cv::FaceDistortionType::LowerHead) << std::endl;
     };
 
     const auto incrementDistort = [&](cv::FaceDistortionType type) {
-        glubschEffect.increment(type);
-        printDistorts();
+        cv::increment(config.distortions, type);
+        printDistortions();
     };
     const auto decrementDistort = [&](cv::FaceDistortionType type) {
-        glubschEffect.decrement(type);
-        printDistorts();
+        cv::decrement(config.distortions, type);
+        printDistortions();
     };
 
-    const auto toggleDistortAlways = [&glubschEffect]() {
-        glubschEffect.setDistortAlways(!glubschEffect.getDistortAlways());
-        std::cout << "Distort always: " << glubschEffect.getDistortAlways() << std::endl;
+    const auto toggleDistortAlways = [&]() {
+        config.distortAlways = !config.distortAlways;
+        std::cout << "Distort always: " << config.distortAlways << std::endl;
     };
 
-    const auto toggleDrawLandmarks = [&glubschEffect]() {
-        glubschEffect.setDrawLandmarks(!glubschEffect.getDrawLandmarks());
-        std::cout << "Drawe Landmarks: " << glubschEffect.getDrawLandmarks() << std::endl;
+    const auto toggleDrawLandmarks = [&]() {
+        config.drawLandmarks = !config.drawLandmarks;
+        std::cout << "Drawe Landmarks: " << config.drawLandmarks << std::endl;
     };
 
     const auto toggleOutputStream = [&outputStream]() {
