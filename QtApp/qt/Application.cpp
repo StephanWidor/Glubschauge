@@ -5,7 +5,8 @@
 
 qt::Application::Application(int argc, char *argv[]): m_qApplication(argc, argv)
 {
-    m_qApplication.setOrganizationName("Stephan Widor");
+    // FileDialog complains without this, but we set organization to empty because appdata location changes otherwise
+    m_qApplication.setOrganizationName("");
     m_qApplication.setOrganizationDomain("glubsch.widor.site");
     qmlRegisterUncreatableType<qt::ProcessingFilter>("stephanwidor.Glubschauge", 1, 0, "ProcessingFilter",
                                                      "Don't instantiate!");

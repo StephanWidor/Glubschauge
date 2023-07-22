@@ -18,6 +18,8 @@ public:
 
     static std::string provideAppDataDir();
 
+    static std::string provideGlubschConfigPath();
+
     static std::string providePicturesDir();
 
     static std::string generatePathForNewPicture(const std::string &fileEnding = "jpg");

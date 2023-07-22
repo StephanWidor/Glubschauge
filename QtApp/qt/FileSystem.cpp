@@ -56,6 +56,11 @@ std::string qt::FileSystem::provideAppDataDir()
     return "";
 }
 
+std::string qt::FileSystem::provideGlubschConfigPath()
+{
+    return provideAppDataDir() + "GlubschConfig.yaml";
+}
+
 std::string qt::FileSystem::providePicturesDir()
 {
     QString picturesPath = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation) + "/Glubschauge/";
