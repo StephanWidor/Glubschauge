@@ -41,8 +41,15 @@ void qt::ProcessingFilterRunnable::capture(const cv::Mat &img)
 }
 
 qt::ProcessingFilter::ProcessingFilter(QObject *pParent)
-    : QAbstractVideoFilter(pParent), m_glubschEffect(Assets::provideCascadeData(), Assets::provideFacemarkData())
+    : QAbstractVideoFilter(pParent)
+    , m_glubschEffect(Assets::provideCascadeData(), Assets::provideFacemarkData(),
+                      cv::loadGlubschConfigFromYaml(FileSystem::provideGlubschConfigPath()))
 {}
+
+qt::ProcessingFilter::~ProcessingFilter()
+{
+    cv::saveToYaml(m_glubschEffect.config, FileSystem::provideGlubschConfigPath());
+}
 
 QVideoFilterRunnable *qt::ProcessingFilter::createFilterRunnable()
 {
@@ -120,4 +127,9 @@ void qt::ProcessingFilter::stopStreamingToOutputDevice()
         m_pOutputDevice = nullptr;
         emit streamingToOutputDeviceChanged();
     }
+}
+
+void qt::ProcessingFilter::saveConfig()
+{
+    cv::saveToYaml(m_glubschEffect.config, FileSystem::provideGlubschConfigPath());
 }

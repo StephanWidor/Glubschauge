@@ -14,7 +14,10 @@ Drawer {
         y: 0.5 * height
         icon.source: "qrc:/icons/clear.svg"
         palette.button: "transparent"
-        onClicked: settingsView.close()
+        onClicked: {
+            processingFilter.saveConfig()
+            settingsView.close()
+        }
     }
 
     ColumnLayout {

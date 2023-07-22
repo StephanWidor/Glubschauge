@@ -9,7 +9,15 @@ int main(int, char *[])
     cv::VideoCapture cap;
     cv::Mat frame;
     bool run{true};
-    cv::GlubschEffect glubschEffect("haarcascade_frontalface_alt2.xml", "lbfmodel.yaml");
+
+    const auto configPath = []() {
+        if (const auto home = std::getenv("HOME"))
+            return std::filesystem::path{home} / ".local/share/Glubschauge/GlubschConfig.yaml";
+        return std::filesystem::temp_directory_path() / "GlubschConfig.yaml";
+    }();
+
+    cv::GlubschEffect glubschEffect("haarcascade_frontalface_alt2.xml", "lbfmodel.yaml",
+                                    cv::loadGlubschConfigFromYaml(configPath));
     auto &config = glubschEffect.config;
     std::optional<cv::OutputDevice> outputStream;
 
@@ -130,5 +138,6 @@ int main(int, char *[])
         handleKeyInput(cv::waitKey(5));
     }
     cv::destroyAllWindows();
+    cv::saveToYaml(glubschEffect.config, configPath);
     return 0;
 }

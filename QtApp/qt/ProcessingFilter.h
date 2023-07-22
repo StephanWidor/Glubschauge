@@ -49,6 +49,8 @@ class ProcessingFilter : public QAbstractVideoFilter
 public:
     ProcessingFilter(QObject *pParent = nullptr);
 
+    ~ProcessingFilter();
+
     QVideoFilterRunnable *createFilterRunnable() override;
 
 signals:
@@ -70,6 +72,8 @@ public slots:
     void streamToOutputDevice(const QString &device);
 
     void stopStreamingToOutputDevice();
+
+    void saveConfig();
 
 protected:
     void setRotation(int rotation) { m_imgTransform.setRotation(rotation); }

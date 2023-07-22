@@ -13,6 +13,8 @@ struct GlubschConfig
     bool distortAlways = false;
     FaceDistortions distortions = defaultFaceDistortions;
 };
+GlubschConfig loadGlubschConfigFromYaml(const std::filesystem::path &);
+bool saveToYaml(const GlubschConfig &, const std::filesystem::path &);
 
 class GlubschEffect
 {

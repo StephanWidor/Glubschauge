@@ -1,8 +1,57 @@
 #include "cv/GlubschEffect.h"
 #include "cv/BarrelCreation.h"
 #include "cv/MouthOpen.h"
+#include "logger.h"
 
 namespace cv {
+
+GlubschConfig loadGlubschConfigFromYaml(const std::filesystem::path &path)
+{
+    GlubschConfig config;
+    try
+    {
+        cv::FileStorage file(path.string(), cv::FileStorage::READ);
+        std::vector<double> tmpDistortions;
+        if (!file.isOpened())
+            throw std::runtime_error("Failed to open File");
+        file["drawLandmarks"] >> config.drawLandmarks;
+        file["distortAlways"] >> config.distortAlways;
+        file["distortions"] >> tmpDistortions;
+        file.release();
+        if (tmpDistortions.size() > config.distortions.size())
+            throw std::runtime_error("Invalid distortions");
+        std::copy(tmpDistortions.begin(), tmpDistortions.end(), config.distortions.begin());
+        logger::out << "Loaded GlubschConfig from " << path.c_str();
+    }
+    catch (std::exception &e)
+    {
+        logger::out << "Failed to load GlubschConfig from " << path.c_str();
+        logger::out << e.what();
+    }
+    return config;
+}
+
+bool saveToYaml(const GlubschConfig &config, const std::filesystem::path &path)
+{
+    try
+    {
+        cv::FileStorage file(path.string(), cv::FileStorage::WRITE);
+        if (file.isOpened())
+        {
+            file << "drawLandmarks" << config.drawLandmarks;
+            file << "distortAlways" << config.distortAlways;
+            file << "distortions" << std::vector(config.distortions.begin(), config.distortions.end());
+            file.release();
+            logger::out << "Saved GlubschConfig to " << path.c_str();
+            return true;
+        }
+    }
+    catch (...)
+    {
+        logger::out << "Failed to save GlubschConfig to " << path.c_str();
+    }
+    return false;
+}
 
 void GlubschEffect::process(Mat &io_img)
 {
