@@ -55,8 +55,8 @@ bool saveToYaml(const GlubschConfig &config, const std::filesystem::path &path)
 
 void GlubschEffect::process(Mat &io_img)
 {
-    const auto doDistort = !std::all_of(config.distortions.begin(), config.distortions.end(),
-                                        [](const auto factor) { return factor > 0.0; });
+    const auto doDistort =
+      std::any_of(config.distortions.begin(), config.distortions.end(), [](const auto factor) { return factor > 0.0; });
     if (config.drawLandmarks || doDistort)
     {
         const auto [faceBBoxes, landmarks] = m_faceDetection.detect(io_img);
