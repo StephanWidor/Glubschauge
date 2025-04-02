@@ -1,17 +1,14 @@
 #pragma once
-#include <QString>
-#include <string>
+#include <filesystem>
 
 namespace qt {
 
 class Assets
 {
 public:
-    static std::string provideResource(const std::string &file);
+    static std::filesystem::path provideCascadeData();
 
-    static std::string provideCascadeData();
-
-    static std::string provideFacemarkData();
+    static std::filesystem::path provideFacemarkData();
 };
 
 }    // namespace qt

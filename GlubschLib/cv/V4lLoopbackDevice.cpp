@@ -1,8 +1,8 @@
-#include "cv/OutputDevice.h"
+#include "cv/V4lLoopbackDevice.h"
 #include "logger.h"
 #include <opencv2/opencv.hpp>
 
-bool cv::OutputDevice::setSize([[maybe_unused]] const cv::Size &size)
+bool cv::V4lLoopbackDevice::setSize([[maybe_unused]] const cv::Size &size)
 {
 #ifdef V4L_AVAILABLE
     if (size == m_size)
@@ -10,8 +10,7 @@ bool cv::OutputDevice::setSize([[maybe_unused]] const cv::Size &size)
     if (m_output < 0)
         return false;
 
-    v4l2_format format;
-    format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+    v4l2_format format{.type = V4L2_BUF_TYPE_VIDEO_OUTPUT};
     if (ioctl(m_output, VIDIOC_G_FMT, &format) < 0)
         return false;
 
@@ -32,13 +31,13 @@ bool cv::OutputDevice::setSize([[maybe_unused]] const cv::Size &size)
 #endif
 }
 
-cv::OutputDevice::OutputDevice([[maybe_unused]] std::string_view device)
+cv::V4lLoopbackDevice::V4lLoopbackDevice([[maybe_unused]] std::string_view device)
 #ifdef V4L_AVAILABLE
     : m_output(::open(device.data(), O_WRONLY))
 #endif
 {}
 
-cv::OutputDevice::~OutputDevice()
+cv::V4lLoopbackDevice::~V4lLoopbackDevice()
 {
 #ifdef V4L_AVAILABLE
     if (m_output >= 0)
@@ -46,7 +45,7 @@ cv::OutputDevice::~OutputDevice()
 #endif
 }
 
-void cv::OutputDevice::push([[maybe_unused]] const cv::Mat &img)
+void cv::V4lLoopbackDevice::push([[maybe_unused]] const cv::Mat &img)
 {
 #ifdef V4L_AVAILABLE
     if (!setSize(img.size()))

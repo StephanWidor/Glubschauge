@@ -8,6 +8,7 @@ Get big eyes or nose by opening your mouth :-)
 # Build
 
 Glubschauge can be compiled for Linux, Android, MacOS and Windows.
+(Although only tested on Arch Linux desktop build, as well as cross compiled for Android)
 
 Before building, you need to get the submodule that builds OpenCV:
 
@@ -21,25 +22,20 @@ OpenCV build by the OpenCV submodule.
 
 ## Linux
 
-Besides a recent compiler (gcc or clang) and Qt, you need cmake, tbb, and openmp. On Debian/Ubuntu:
-
-`sudo apt-get install cmake libtbb-dev libomp-dev`
-
-If you want the app to be able to save gif files, you need magick++:
-
-`sudo apt-get install libmagick++-dev`
+A recent compiler, Qt6 and cmake is needed, optionally OpenMP.
+If you want the app to be able to save gif files, you also need magick++ (on arch linux imagemagick package, on debian/ubuntu libmagick++-dev)
 
 Then do
 
 ```
 mkdir build
 cd build
-cmake -DCMAKE_PREFIX_PATH=PATH_TO_YOUR_QT_INSTALL/gcc_64
-make -j$(nproc)
+cmake -DCMAKE_PREFIX_PATH=PATH_TO_YOUR_QT_INSTALL/gcc_64 ..
+cmake --build . -j
 ```
 
 On Linux, you can also stream to an output device. If you have v4l2loopback installed
-(on Debian/Ubuntu deb packages v4l2loopback-dkms and v4l2loopback-utils),
+(on Debian/Ubuntu deb packages v4l2loopback-dkms and v4l2loopback-utils, same on Arch Linux),
 do e.g.
 
 ```
@@ -50,54 +46,48 @@ Then choose `/device/video5` as output device in the app settings, and enjoy usi
 as camera in other applications.
 
 
-Tested on Ubuntu20.04 with Qt5.14 and 5.15 using gcc9.3 and clang10.
+Tested on Arch Linux with Qt6.8.3, using gcc14.2.1 and clang19.1.7.
 
 ## Android
 
-Besides Qt, you need Android sdk and ndk installed.
+Besides Qt6, you need Android sdk and ndk installed.
 
-If using QtCreator, Android SDK and NDK paths need to be set in the preferences. Compiling with the
-"Android...Multi-Abi" Kit seems to behave weird somehow. If cmake complains about something like
-"Invalid Android STL: cxx_shared", you may try removing "-DANDROID_STL:STRING=cxx_shared" and setting
-"-DANDROID_NATIVE_API_LEVEL:STRING=26" in the "Initial CMake parameters" of the build configuration.
+If using QtCreator, Android SDK and NDK paths need to be set in the preferences.
+Don't really know why, but in the "Initial Configuration" of the build settings you should set ANDROID_PLATFORM to something like android-30.
 
-On Linux, you can also try running the android_build.sh script. You will probably have to adapt the Qt
-and Android SDK/NDK path inside. You might also want to adapt the "ANDROID_BUILD_ABI_*" values to build
-for the ABIs you need.
+On Linux, you can also try running the android_build.sh script. You will probably have to adapt some of the variables set in the beginning of the script.
+The script will create an apk, which you still have to sign before you can install it on a device:
+```
+./android_build.sh
+cd build.android/arm64-v8a/QtApp/android-build
+keytool -genkey -v -keystore glubschauge.keystore -keyalg RSA -keysize 2048 -validity 10000 -alias glubschauge
+/opt/android-sdk/build-tools/36.0.0/apksigner sign --ks-key-alias glubschauge --ks glubschauge.keystore Glubschauge.apk
+```
+(assuming you have your android-sdk in that place, and built Glubschauge for arm64-v8a)
 
-Tested on Ubuntu20.04 with Qt5.15 using latest Android sdk/ndk.
+After enabling usb debugging on your phone and connecting it to your computer, you can then install
+via adb:
+```
+adb install Glubschauge.apk
+```
+Or copy the apk to your phone and install from there.
+
+Tested on Arch Linux with Qt6.8.3, installed on a Pixel 7a, Android 15.
 
 ## MacOS
 
-Besides a recent apple-clang and Qt, you need cmake, tbb, and openmp installed.
-
-Installing with homebrew:
-
-`brew install cmake tbb libomp`
-
-should do.
-
-If you want the app to be able to save gif files, you need magick++:
-
-`brew install imagemagick`
-
-Then do
+Not tested, but might well work doing something like
 
 ```
 mkdir build
 cd build
 cmake -DCMAKE_PREFIX_PATH=PATH_TO_YOUR_QT_INSTALL/clang_64
-cmake --build .
+cmake --build . -j
 ```
-
-Tested on Catalina with Qt5.15 using AppleClang11.
 
 ## Windows
 
-Besides a recent msvc compiler and Qt, you need cmake. If it is not installed with
-Visual Studio, you can also get it from cmake.org.
-
-Then do
+Also not tested, but might well work doing something like
 
 ```
 mkdir build
@@ -107,10 +97,7 @@ cmake --build . --config Release -j
 PATH_TO_YOUR_QT_INSTALL\bin\windeployqt\ --release --qmldir ..\qml Release\Glubschauge.exe
 ```
 
-Tested on Windows 10 using msvc from Visual Studio 16.
+# Known Issues
 
-# TODO
-
-- check rotation/transformation of camera image on different devices
-- fix opening video files on Android
-- iOS version
+- Permissions for file saving on recent Android are a bit special, and it seems like not yet really covered by Qt6. That's why - on Android - capture images are saved intermediately in the app specific storage, followed by a file dialog being opened that lets you choose where to move that file (like e.g. in global pictures folder).
+- For some video formats (well... maybe rather a lot), the accessible QFrameBuffer doesn't seem to be mappable to CPU memory, which has the consequence that Glubschauge cannot process them.

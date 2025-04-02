@@ -12,12 +12,12 @@
 
 namespace cv {
 
-class OutputDevice
+class V4lLoopbackDevice
 {
 public:
-    OutputDevice(std::string_view device);
+    V4lLoopbackDevice(std::string_view device);
 
-    ~OutputDevice();
+    ~V4lLoopbackDevice();
 
     void push(const cv::Mat &img);
 
@@ -29,6 +29,8 @@ public:
         return false;
 #endif
     }
+
+    bool ok() const { return m_output >= 0; }
 
 private:
     bool setSize(const cv::Size &size);

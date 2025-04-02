@@ -3,7 +3,6 @@
 #include "cv/FaceDetection.h"
 #include "cv/FaceDistortionType.h"
 #include <filesystem>
-#include <optional>
 
 namespace cv {
 

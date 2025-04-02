@@ -21,12 +21,11 @@ GlubschConfig loadGlubschConfigFromYaml(const std::filesystem::path &path)
         if (tmpDistortions.size() > config.distortions.size())
             throw std::runtime_error("Invalid distortions");
         std::copy(tmpDistortions.begin(), tmpDistortions.end(), config.distortions.begin());
-        logger::out << "Loaded GlubschConfig from " << path.c_str();
     }
     catch (std::exception &e)
     {
-        logger::out << "Failed to load GlubschConfig from " << path.c_str();
-        logger::out << e.what();
+        logger::out << ("Failed to load GlubschConfig from " + path.string()).c_str();
+        logger::out << "Will use default configuration";
     }
     return config;
 }
@@ -42,7 +41,6 @@ bool saveToYaml(const GlubschConfig &config, const std::filesystem::path &path)
             file << "distortAlways" << config.distortAlways;
             file << "distortions" << std::vector(config.distortions.begin(), config.distortions.end());
             file.release();
-            logger::out << "Saved GlubschConfig to " << path.c_str();
             return true;
         }
     }

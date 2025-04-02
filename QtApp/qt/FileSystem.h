@@ -1,28 +1,18 @@
 #pragma once
-#include <string>
+#include <filesystem>
 
 namespace qt {
 
 class FileSystem
 {
 public:
-    enum class AccessType
-    {
-        Read,
-        Write
-    };
+    static void moveToUserChoiceDir(const std::filesystem::path &);
 
-    static bool requestPermission(AccessType);
+    static std::filesystem::path appDataDir();
 
-    static void triggerMediaScan(const std::string &filePath);
+    static std::filesystem::path picturesDir();
 
-    static std::string provideAppDataDir();
-
-    static std::string provideGlubschConfigPath();
-
-    static std::string providePicturesDir();
-
-    static std::string generatePathForNewPicture(const std::string &fileEnding = "jpg");
+    static std::filesystem::path glubschConfigPath();
 };
 
 }    // namespace qt

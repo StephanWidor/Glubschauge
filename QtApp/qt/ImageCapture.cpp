@@ -1,0 +1,95 @@
+#include "qt/ImageCapture.h"
+#include "qt/FileSystem.h"
+#include <QThread>
+#include <ctime>
+#include <cv/ImageUtils.h>
+#include <format>
+#include <logger.h>
+#include <sstream>
+
+namespace {
+
+std::filesystem::path generateFilePath(const std::string_view fileEnding)
+{
+    const auto t = std::time(nullptr);
+    const auto tm = *std::localtime(&t);
+    std::ostringstream oss;
+    oss << std::put_time(&tm, "%Y%m%d_%H%M%S");
+    return qt::FileSystem::picturesDir() / std::format("glubsch_{}.{}", oss.str(), fileEnding);
+}
+
+}    // namespace
+
+qt::ImageCapture::~ImageCapture()
+{
+    // busy wait until gif saving has finished
+    while (state() != Idle)
+        ;
+}
+
+void qt::ImageCapture::startJPG()
+{
+    if (state() == Idle)
+        setState(CollectingJPG);
+}
+
+void qt::ImageCapture::startGIF(std::chrono::milliseconds duration)
+{
+    if (state() == Idle)
+    {
+        m_gifDuration = duration;
+        m_startTime = std::chrono::system_clock::now();
+        setState(CollectingGIF);
+    }
+}
+
+void qt::ImageCapture::push(const cv::Mat &img)
+{
+    using namespace std::chrono;
+    if (state() >= CollectingJPG)
+    {
+        m_gifContainer.push(img);
+        switch (state())
+        {
+            case CollectingJPG:
+            {
+                setState(ProcessingJPG);
+                // we use QThread because moveToPictures uses QFileDialog, which is unhappy being started from std::thread
+                auto qThread = QThread::create([this, imgCopy = img.clone()]() {
+                    const auto filePath = generateFilePath("jpg");
+                    if (!cv::imwrite(filePath.native(), imgCopy))
+                        logger::out << "failed to save " << filePath.native();
+#ifdef ANDROID
+                    FileSystem::moveToUserChoiceDir(filePath);
+#endif
+                    setState(Idle);
+                });
+                qThread->start();
+                break;
+            }
+            case CollectingGIF:
+            {
+                m_gifContainer.push(img);
+                if (const auto diffTime = duration_cast<milliseconds>(system_clock::now() - m_startTime);
+                    diffTime >= m_gifDuration)
+                {
+                    setState(ProcessingGIF);
+                    auto qThread = QThread::create([diffTime, this]() {
+                        const auto filePath = generateFilePath("gif");
+                        if (!m_gifContainer.save(filePath.native(), diffTime))
+                            logger::out << "failed to save " << filePath.native();
+                        m_gifContainer.clear();
+#ifdef ANDROID
+                        FileSystem::moveToUserChoiceDir(filePath);
+#endif
+                        setState(Idle);
+                    });
+                    qThread->start();
+                }
+                break;
+            }
+            default:
+                break;
+        }
+    }
+}

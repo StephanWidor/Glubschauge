@@ -1,12 +1,16 @@
-import QtQuick 2.14
-import QtQuick.Controls 2.14
-import QtQuick.Layouts 1.14
-import QtMultimedia 5.14
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtQuick.Dialogs
+import QtMultimedia
 import stephanwidor.Glubschauge 1.0
 
 Drawer {
     id: settingsView
-    property ProcessingCameraView cameraView
+    property CameraHandle cameraHandle
+
+    // not sure why, but this is not properly updated at startup otherwise
+    onOpened: cameraFormatComboBox.currentIndex = cameraHandle.cameraFormatIndex
 
     RoundButton {
         id: closeButton
@@ -60,7 +64,7 @@ Drawer {
                 Switch {
                     id: distortAlwaysSwitch
                     position: processingFilter.distortAlways ? 1 : 0
-                    onClicked: processingFilter.distortAlways = (position != 0)
+                    onClicked: processingFilter.distortAlways = (position !== 0)
                 }
                 Label {
                     text: "Eyes"
@@ -91,7 +95,7 @@ Drawer {
                     id: showLandmarksSwitch
                     text: "Facemarks"
                     position: processingFilter.showLandmarks ? 1 : 0
-                    onClicked: processingFilter.showLandmarks = (position != 0)
+                    onClicked: processingFilter.showLandmarks = (position !== 0)
                 }
                 Item {
                     Layout.fillWidth: true
@@ -100,7 +104,7 @@ Drawer {
                     id: showFpsSwitch
                     text: "FPS"
                     position: processingFilter.showFps ? 1 : 0
-                    onClicked: processingFilter.showFps = (position != 0)
+                    onClicked: processingFilter.showFps = (position !== 0)
                 }
             }
         }
@@ -108,39 +112,54 @@ Drawer {
         GroupBox {
             title: "Camera"
             Layout.fillWidth: true
-            enabled: !processingFilter.streamingToOutputDevice
+            enabled: !processingFilter.streamingToV4lDevice
             RowLayout {
                 ComboBox {
-                    id: resolutionComboBox
-                    property bool fillingList: false
+                    id: cameraFormatComboBox
+                    textRole: "text"
+                    implicitContentWidthPolicy: ComboBox.WidestText
                     model: ListModel {
-                        id: model
+                        id: formatModel
                     }
-                    onCurrentTextChanged: {
-                        if (!resolutionComboBox.fillingList)
-                            cameraView.setResolution(
-                                        resolutionComboBox.currentText)
+                    currentIndex: cameraHandle.cameraFormatIndex
+
+                    onActivated: {
+                        if (currentIndex !== cameraHandle.cameraFormatIndex)
+                            cameraHandle.cameraFormatIndex = currentIndex
                     }
+                    function makeSizeString(size) {
+                        return size.width.toString(
+                                    ) + "x" + size.height.toString()
+                    }
+                    function makePixelFormatString(pixelFormat) {
+                        const formatStrings = ["Invalid", "ARGB8888", "ARGB8888_Premultiplied", "XRGB8888", "BGRA8888", "BGRA8888_Premultiplied", "BGRX8888", "ABGR8888", "XBGR8888", "RGBA8888", "RGBX8888", "AYUV", "AYUV_Premultiplied", "YUV420P", "YUV422P", "YV12", "UYVY", "YUYV", "NV12", "NV21", "IMC1", "IMC2", "IMC3", "IMC4", "Y8", "Y16", "P010", "P016", "SamplerExternalOES", "Jpeg", "SamplerRect", "YUV420P10"]
+                        if (pixelFormat >= formatStrings.length)
+                            return "unknown (" + pixelFormat.toString() + ")"
+                        return formatStrings[pixelFormat]
+                    }
+                    function makeCameraFormatText(cameraFormat) {
+                        return cameraFormatComboBox.makePixelFormatString(
+                                    cameraFormat.pixelFormat) + ", "
+                                + cameraFormatComboBox.makeSizeString(
+                                    cameraFormat.resolution)
+                    }
+                    function updateModel() {
+                        formatModel.clear()
+                        var availableFormats = cameraHandle.availableCameraFormats
+                        for (var i = 0; i < availableFormats.length; ++i) {
+                            var format = availableFormats[i]
+                            formatModel.append({
+                                                   "text": cameraFormatComboBox.makeCameraFormatText(
+                                                               format)
+                                               })
+                        }
+                    }
+
                     Connections {
-                        target: cameraView
-                        function onCameraStatusChanged() {
-                            if (cameraView.cameraStatus !== Camera.ActiveStatus)
-                                return
-                            resolutionComboBox.fillingList = true
-                            model.clear()
-                            var currentResolution = cameraView.resolution.width.toString(
-                                        ) + "x" + cameraView.resolution.height.toString()
-                            var list = cameraView.availableResolutions()
-                            for (var i = 0; i < list.length; ++i) {
-                                var resolution = list[i].width.toString(
-                                            ) + "x" + list[i].height.toString()
-                                model.append({
-                                                 "resolution": resolution
-                                             })
-                                if (resolution === currentResolution)
-                                    resolutionComboBox.currentIndex = i
-                            }
-                            resolutionComboBox.fillingList = false
+                        target: cameraHandle
+                        function onAvailableCameraFormatsChanged() {
+                            cameraFormatComboBox.updateModel()
+                            cameraFormatComboBox.currentIndex = cameraHandle.cameraFormatIndex
                         }
                     }
                 }
@@ -150,44 +169,73 @@ Drawer {
                 RoundButton {
                     icon.source: "qrc:/icons/camera-flip.svg"
                     palette.button: "transparent"
-                    visible: QtMultimedia.availableCameras.length > 1
-                    onClicked: cameraView.toggleCamera()
+                    visible: cameraHandle.cameraCount > 1
+                    onClicked: cameraHandle.switchToNextCameraDevice()
                 }
             }
         }
 
         GroupBox {
-            title: "Stream"
+            id: v4lGroupBox
+            title: "V4L"
             Layout.fillWidth: true
-            visible: processingFilter.streamingToOutputPossible
+            visible: processingFilter.v4lOutputPossible
+            property string toolTipText: "To make this available, do\n'sudo modprobe v4l2loopback exclusive_caps=1 video_nr="
+                                         + v4lDeviceComboBox.currentIndex.toString(
+                                             ) + " card_label=\"Glubschauge Cam\"'"
+            Popup {
+                id: v4lErrorPopup
+                modal: true
+                anchors.centerIn: parent
+                background: Rectangle {
+                    color: "#e61010"
+                }
+                Text {
+                    text: "Couldn't open " + v4lDeviceComboBox.currentValue
+                }
+                closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+            }
             RowLayout {
                 Switch {
-                    id: streamToOutputDeviceSwitch
-                    text: "Stream to "
-                    position: processingFilter.streamingToOutputDevice ? 1 : 0
+                    text: "Loopback to "
+                    position: processingFilter.v4lDeviceActive ? 1 : 0
                     onClicked: {
-                        if (position == 0)
-                            processingFilter.stopStreamingToOutputDevice()
-                        else
-                            processingFilter.streamToOutputDevice(
-                                        outputDeviceEdit.text)
+                        if (position === 0)
+                            processingFilter.clearV4lDevice()
+                        else {
+                            processingFilter.setV4lDevice(
+                                        v4lDeviceComboBox.currentValue)
+                            if (!processingFilter.v4lDeviceActice) {
+                                position = 0
+                                v4lErrorPopup.open()
+                            }
+                        }
                     }
+                    ToolTip.visible: hovered
+                    ToolTip.text: v4lGroupBox.toolTipText
                 }
                 Item {
                     Layout.fillWidth: true
                 }
-                Rectangle {
-                    color: "white"
-                    border.color: "darkgray"
-                    border.width: 2
-                    width: outputDeviceEdit.width + 10
-                    height: outputDeviceEdit.height + 10
-                    TextEdit {
-                        id: outputDeviceEdit
-                        anchors.centerIn: parent
-                        text: "/dev/video5"
-                        enabled: processingFilter.streamToOutputDevice
+                ComboBox {
+                    id: v4lDeviceComboBox
+                    enabled: !processingFilter.v4lDeviceActice
+                    textRole: "path"
+                    valueRole: "path"
+                    implicitContentWidthPolicy: ComboBox.WidestText
+                    model: ListModel {
+                        id: v4lModel
                     }
+                    Component.onCompleted: {
+                        for (var i = 0; i < 10; ++i) {
+                            v4lModel.append({
+                                                "path": "/dev/video" + i.toString()
+                                            })
+                        }
+                        v4lDeviceComboBox.currentIndex = 5
+                    }
+                    ToolTip.visible: hovered
+                    ToolTip.text: v4lGroupBox.toolTipText
                 }
             }
         }

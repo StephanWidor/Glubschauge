@@ -1,8 +1,6 @@
 #pragma once
 #include <opencv2/imgproc.hpp>
 
-#include <numeric>
-
 namespace cv {
 using Contour = std::vector<Point>;
 using ContourVector = std::vector<Contour>;

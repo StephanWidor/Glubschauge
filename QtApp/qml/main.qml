@@ -1,18 +1,16 @@
-import QtQuick 2.14
-import QtQuick.Controls 2.14
+import QtQuick.Controls.Basic
+import QtQuick
+import QtQuick.Controls
 
 ApplicationWindow {
     id: appWindow
     visible: true
-    width: 800
-    height: 700
-    title: qsTr("Glubschauge")
+    visibility: Window.Maximized
+    title: "Glubschauge"
 
-    ScanningView {
-        id: scanningView
+    MainView {
         anchors.fill: parent
     }
-
     Shortcut {
         sequence: StandardKey.Quit
         context: Qt.ApplicationShortcut

@@ -1,5 +1,5 @@
 #include <cv/GlubschEffect.h>
-#include <cv/OutputDevice.h>
+#include <cv/V4lLoopbackDevice.h>
 #include <opencv2/opencv.hpp>
 #include <optional>
 
@@ -19,7 +19,7 @@ int main(int, char *[])
     cv::GlubschEffect glubschEffect("haarcascade_frontalface_alt2.xml", "lbfmodel.yaml",
                                     cv::loadGlubschConfigFromYaml(configPath));
     auto &config = glubschEffect.config;
-    std::optional<cv::OutputDevice> outputStream;
+    std::optional<cv::V4lLoopbackDevice> outputStream;
 
     const auto getDistort = [&](const cv::FaceDistortionType type) -> double {
         return cv::get(config.distortions, type);

@@ -2,10 +2,6 @@
 #include "cv/FaceDetection.h"
 #include "cv/FaceDistortionType.h"
 #include "cv/ImageUtils.h"
-#include "cv/Utils2D.h"
-
-#include <chrono>
-#include <deque>
 
 namespace cv {
 

@@ -2,26 +2,30 @@
 #include "qt/FileSystem.h"
 #include <QDir>
 #include <QFile>
-#include <QStandardPaths>
 #include <logger.h>
 
-std::string qt::Assets::provideResource(const std::string &file)
+namespace {
+
+std::filesystem::path provideCopiedResource(const std::string &resourceFileName)
 {
-    QString appDataPath = QString::fromStdString(FileSystem::provideAppDataDir());
-    QString qFile = QString::fromStdString(file);
-    QString cascadeDataPath = appDataPath + qFile;
-    if (QFile::exists(cascadeDataPath) || QFile::copy(":/" + qFile, cascadeDataPath))
-        return cascadeDataPath.toStdString();
-    logger::out << ("Couldn't copy " + file);
+    const auto copiedResourcePath = qt::FileSystem::appDataDir() / resourceFileName;
+    if (std::filesystem::exists(copiedResourcePath) ||
+        QFile::copy(":/" + QString::fromStdString(resourceFileName), QString::fromStdString(copiedResourcePath)))
+    {
+        return copiedResourcePath;
+    }
+    logger::out << std::format("Couldn't copy {} to app data folder", resourceFileName);
     return "";
 }
 
-std::string qt::Assets::provideCascadeData()
+}    // namespace
+
+std::filesystem::path qt::Assets::provideCascadeData()
 {
-    return provideResource("haarcascade_frontalface_alt2.xml");
+    return provideCopiedResource("haarcascade_frontalface_default.xml");
 }
 
-std::string qt::Assets::provideFacemarkData()
+std::filesystem::path qt::Assets::provideFacemarkData()
 {
-    return provideResource("lbfmodel.yaml");
+    return provideCopiedResource("lbfmodel.yaml");
 }

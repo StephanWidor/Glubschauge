@@ -5,6 +5,8 @@
         <file>icons/camera-symbolic.svg</file>
         <file>icons/camcorder.svg</file>
         <file>icons/clear.svg</file>
+        <file>icons/media-playback-pause.svg</file>
+        <file>icons/media-playback-start.svg</file>
         <file>icons/properties.svg</file>
         <file>icons/stop.svg</file>
     </qresource>

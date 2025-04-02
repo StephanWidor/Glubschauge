@@ -1,80 +1,61 @@
 #include "qt/FileSystem.h"
-#include <QDir>
 #include <QFile>
+#include <QFileDialog>
 #include <QStandardPaths>
+#include <format>
 #include <logger.h>
-#ifdef ANDROID
-#include <QAndroidJniEnvironment>
-#include <QUrl>
-#include <QtAndroid>
-#endif
-#include <chrono>
-#include <iomanip>
-#include <sstream>
 
-bool qt::FileSystem::requestPermission([[maybe_unused]] AccessType type)
+void qt::FileSystem::moveToUserChoiceDir(const std::filesystem::path &path)
 {
-#ifdef ANDROID
-    QString permissionString = type == AccessType::Read ? "android.permission.READ_EXTERNAL_STORAGE" :
-                                                          "android.permission.WRITE_EXTERNAL_STORAGE";
-    return QtAndroid::checkPermission(permissionString) == QtAndroid::PermissionResult::Granted ||
-           QtAndroid::requestPermissionsSync({permissionString}).value(permissionString) ==
-             QtAndroid::PermissionResult::Granted;
-#endif
-    return true;
-}
-
-void qt::FileSystem::triggerMediaScan([[maybe_unused]] const std::string &filePath)
-{
-#ifdef ANDROID
-    QAndroidJniEnvironment env;
-    QAndroidJniObject context =
-      QtAndroid::androidActivity().callObjectMethod("getApplicationContext", "()Landroid/content/Context;");
-    QAndroidJniObject action = QAndroidJniObject::fromString("android.intent.action.MEDIA_SCANNER_SCAN_FILE");
-    QAndroidJniObject path =
-      QAndroidJniObject::fromString(QUrl::fromLocalFile(QString::fromStdString(filePath)).toString());
-    QAndroidJniObject uri = QAndroidJniObject::callStaticObjectMethod(
-      "android/net/Uri", "parse", "(Ljava/lang/String;)Landroid/net/Uri;", path.object<jstring>());
-    QAndroidJniObject intent("android/content/Intent");
-    intent = intent.callObjectMethod("setData", "(Landroid/net/Uri;)Landroid/content/Intent;", uri.object());
-    intent = intent.callObjectMethod("setAction", "(Ljava/lang/String;)Landroid/content/Intent;", action.object());
-    context.callMethod<void>("sendBroadcast", "(Landroid/content/Intent;)V", intent.object());
-    if (env->ExceptionCheck())
+    QFileDialog fileDialog(nullptr, "Save Captured Image",
+                           QStandardPaths::writableLocation(QStandardPaths::PicturesLocation),
+                           QString(std::format("Images (*{})", path.extension().c_str()).c_str()));
+    fileDialog.setAcceptMode(QFileDialog::AcceptSave);
+    fileDialog.setFileMode(QFileDialog::AnyFile);
+    fileDialog.setViewMode(QFileDialog::List);
+    fileDialog.selectFile(QString(path.filename().c_str()));
+    if (fileDialog.exec())
     {
-        env->ExceptionDescribe();
-        env->ExceptionClear();
+        const auto selectedFiles = fileDialog.selectedFiles();
+        if (!selectedFiles.empty() && !selectedFiles.front().isEmpty())
+        {
+            const auto &newPath = selectedFiles.front();
+            if (newPath.toStdString() == path.string())
+                return;
+
+            QFile qFile(QString(path.native().c_str()));
+            qFile.open(QIODevice::ReadWrite);
+            if (!qFile.rename(newPath))
+                logger::out << std::format("failed saving capture to {}", newPath.toStdString());
+            qFile.close();
+        }
     }
+
+    std::filesystem::remove(path);
+}
+
+std::filesystem::path qt::FileSystem::appDataDir()
+{
+    auto dir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation).toStdString();
+    if (!std::filesystem::exists(dir))
+        std::filesystem::create_directories(dir);
+    return dir;
+}
+
+std::filesystem::path qt::FileSystem::picturesDir()
+{
+#ifdef ANDROID
+    return QStandardPaths::writableLocation(QStandardPaths::PicturesLocation).toStdString();
+#else
+    auto dir = std::filesystem::path(QStandardPaths::writableLocation(QStandardPaths::PicturesLocation).toStdString()) /
+               "Glubschauge";
+    if (!std::filesystem::exists(dir))
+        std::filesystem::create_directories(dir);
+    return dir;
 #endif
 }
 
-std::string qt::FileSystem::provideAppDataDir()
+std::filesystem::path qt::FileSystem::glubschConfigPath()
 {
-    QString appDataPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/";
-    if (QDir appDataDir(appDataPath); appDataDir.exists() || appDataDir.mkdir(appDataPath))
-        return appDataPath.toStdString();
-    logger::out << "couldn't create appDataPath";
-    return "";
-}
-
-std::string qt::FileSystem::provideGlubschConfigPath()
-{
-    return provideAppDataDir() + "GlubschConfig.yaml";
-}
-
-std::string qt::FileSystem::providePicturesDir()
-{
-    QString picturesPath = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation) + "/Glubschauge/";
-    if (QDir picturesDir(picturesPath); picturesDir.exists() || picturesDir.mkdir(picturesPath))
-        return picturesPath.toStdString();
-    logger::out << "couldn't create picturesPath";
-    return "";
-}
-
-std::string qt::FileSystem::generatePathForNewPicture(const std::string &fileEnding)
-{
-    const auto t = std::time(nullptr);
-    const auto tm = *std::localtime(&t);
-    std::ostringstream oss;
-    oss << std::put_time(&tm, "%Y%m%d_%H%M%S");
-    return providePicturesDir() + oss.str() + "." + fileEnding;
+    return appDataDir() / "GlubschConfig.yaml";
 }

@@ -1,67 +1,42 @@
 #include "magick/GifContainer.h"
+#include <logger.h>
 
 #ifdef IMAGEMAGICK_AVAILABLE
+
 #include <Magick++/Image.h>
 #include <Magick++/STL.h>
+#include <ranges>
 
-bool magick::GifContainer::implemented()
+bool magick::GifContainer::save(const std::filesystem::path &file, std::chrono::milliseconds duration)
 {
-    return true;
-}
-
-void magick::GifContainer::push(const cv::Mat &img)
-{
-    assert(img.type() == CV_8UC3);
-    m_images.push_back(img);
-}
-
-bool magick::GifContainer::save(const std::string &file, std::chrono::milliseconds duration)
-{
-    bool retVal = false;
+    bool gifSaved = false;
     if (!m_images.empty())
     {
-        std::vector<Magick::Image> images;
-        images.reserve(m_images.size());
-        std::transform(m_images.begin(), m_images.end(), std::back_inserter(images), [](const auto &img) {
-            return Magick::Image(img.cols, img.rows, "BGR", Magick::CharPixel, img.data);
-        });
-
-        const size_t delay = duration.count() / (10u * images.size());
-        for (auto &image : images)
-            image.animationDelay(delay);
+        const auto delay = static_cast<size_t>(
+          std::round(0.1 * static_cast<double>(duration.count()) / static_cast<double>(m_images.size())));
+        auto images = m_images | std::views::transform([delay](auto &cvImg) {
+                          auto img = Magick::Image(cvImg.cols, cvImg.rows, "BGR", Magick::CharPixel, cvImg.data);
+                          img.animationDelay(delay);
+                          return img;
+                      }) |
+                      std::ranges::to<std::vector>();
         try
         {
-            Magick::writeImages(images.begin(), images.end(), file);
-            retVal = true;
+            Magick::writeImages(images.begin(), images.end(), file.native());
+            gifSaved = true;
         }
         catch (...)
         {}
-        m_images.clear();
+        clear();
     }
-    return retVal;
-}
-
-void magick::GifContainer::clear()
-{
-    m_images.clear();
+    return gifSaved;
 }
 
 #else    // IMAGEMAGICK_AVAILABLE
-
-bool magick::GifContainer::implemented()
-{
-    return false;
-}
-
-void magick::GifContainer::push(const cv::Mat &)
-{}
 
 bool magick::GifContainer::save(const std::string &, std::chrono::milliseconds)
 {
     return false;
 }
-
-void magick::GifContainer::clear()
-{}
 
 #endif    // IMAGEMAGICK_AVAILABLE

@@ -4,6 +4,7 @@
 #else
 #include <iostream>
 #endif
+#include <format>
 #include <string>
 
 namespace logger {

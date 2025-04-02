@@ -1,81 +1,76 @@
 #include "qt/ProcessingFilter.h"
 #include "qt/Assets.h"
 #include "qt/FileSystem.h"
-#include "qt/ImageConvert.h"
+#include <QFile>
+#include <cv/ImageUtils.h>
 #include <logger.h>
 #include <thread>
 
-QVideoFrame qt::ProcessingFilterRunnable::run(QVideoFrame *input, const QVideoSurfaceFormat &, RunFlags)
-{
-    cv::Mat img = ImageConvert::toMat(*input);
-    m_filter.m_imgTransform.transformFromCamera(img);
-    m_filter.m_glubschEffect.process(img);
-    if (m_filter.m_captureNext)
-        capture(img);
-    if (m_filter.m_gifCreator.collecting())
-        m_filter.m_gifCreator.push(img);
-    m_filter.m_flashEffect.process(img);
-    m_filter.m_fpsEffect.process(img);
-    if (m_filter.streamingToOutputDevice())
-        m_filter.m_pOutputDevice->push(img);
-    m_filter.m_imgTransform.transformToCamera(img);
-    if (QVideoFrame output = ImageConvert::toQVideoFrame(img); output.width() != 0)
-        return output;
-    return *input;
-}
-
-void qt::ProcessingFilterRunnable::capture(const cv::Mat &img)
-{
-    std::thread(
-      [&](cv::Mat saveImg) {
-          const auto path = FileSystem::generatePathForNewPicture();
-          if (FileSystem::requestPermission(FileSystem::AccessType::Write) && cv::imwrite(path, saveImg))
-          {
-              m_filter.m_flashEffect.trigger();
-              FileSystem::triggerMediaScan(path);
-          }
-      },
-      img.clone())
-      .detach();
-    m_filter.m_captureNext = false;
-}
-
 qt::ProcessingFilter::ProcessingFilter(QObject *pParent)
-    : QAbstractVideoFilter(pParent)
-    , m_glubschEffect(Assets::provideCascadeData(), Assets::provideFacemarkData(),
-                      cv::loadGlubschConfigFromYaml(FileSystem::provideGlubschConfigPath()))
-{}
+    : QObject(pParent)
+    , m_glubschEffect(Assets::provideCascadeData().native(), Assets::provideFacemarkData().native(),
+                      cv::loadGlubschConfigFromYaml(FileSystem::glubschConfigPath()))
+{
+    connect(&m_inputSocket.sink, &QVideoSink::videoFrameChanged, this, &ProcessingFilter::onInputFrame);
+    connect(&m_imageCapture, &qt::ImageCapture::stateChanged, [this](ImageCapture::State) {
+        emit collectingCaptureChanged();
+        emit processingCaptureChanged();
+        emit busyCaptureChanged();
+    });
+
+    m_processing.store(true, std::memory_order::release);
+    std::thread processingThread([&]() {
+        while (m_processingThreadShouldRun)
+        {
+            auto img = m_inputSocket.get();
+            if (img.empty())
+                continue;
+
+            m_glubschEffect.process(img);
+            m_imageCapture.push(img);
+            m_flashEffect.process(img);
+            if (m_outputMirrored)
+                cv::flip(img, img, 1);
+            m_fpsEffect.process(img);
+            m_v4lSocket.push(img);
+
+            m_outputSocket.push(img);
+        }
+        m_processing.store(false, std::memory_order::release);
+    });
+    processingThread.detach();
+}
 
 qt::ProcessingFilter::~ProcessingFilter()
 {
-    cv::saveToYaml(m_glubschEffect.config, FileSystem::provideGlubschConfigPath());
+    cv::saveToYaml(m_glubschEffect.config, FileSystem::glubschConfigPath());
+    m_processingThreadShouldRun = false;
+    disconnect(&m_inputSocket.sink, &QVideoSink::videoFrameChanged, this, &ProcessingFilter::onInputFrame);
+    while (m_processing.load(std::memory_order::acquire))
+        ;
 }
 
-QVideoFilterRunnable *qt::ProcessingFilter::createFilterRunnable()
+void qt::ProcessingFilter::onInputFrame(const QVideoFrame &frame)
 {
-    m_pRunnable = new ProcessingFilterRunnable(*this);
-    return m_pRunnable;
+    m_inputSocket.push(frame);
 }
 
-void qt::ProcessingFilter::captureGif()
+void qt::ProcessingFilter::capture(const CaptureType type)
 {
-    if (FileSystem::requestPermission(FileSystem::AccessType::Write))
+    switch (type)
     {
-        const auto path = FileSystem::generatePathForNewPicture("gif");
-        m_gifCreator.start(
-          path, std::chrono::milliseconds{2000u},
-          [this]() {
-              emit capturingGifChanged();
-              emit processingGifChanged();
-          },
-          [this, path]() {
-              FileSystem::triggerMediaScan(path);
-              emit processingGifChanged();
-          });
-        emit capturingGifChanged();
+        case JPG:
+        {
+            m_flashEffect.trigger();
+            m_imageCapture.startJPG();
+            break;
+        }
+        case GIF:
+        {
+            m_imageCapture.startGIF(std::chrono::milliseconds{2000u});
+            break;
+        }
     }
-    else
-        logger::out << "No Permission to write gif";
 }
 
 void qt::ProcessingFilter::setShowLandmarks(bool show)
@@ -111,25 +106,79 @@ void qt::ProcessingFilter::setDistort(cv::FaceDistortionType type, double factor
     }
 }
 
-void qt::ProcessingFilter::streamToOutputDevice(const QString &device)
-{
-    if (m_pOutputDevice == nullptr)
-    {
-        m_pOutputDevice = std::make_unique<cv::OutputDevice>(device.toStdString().c_str());
-        emit streamingToOutputDeviceChanged();
-    }
-}
-
-void qt::ProcessingFilter::stopStreamingToOutputDevice()
-{
-    if (m_pOutputDevice != nullptr)
-    {
-        m_pOutputDevice = nullptr;
-        emit streamingToOutputDeviceChanged();
-    }
-}
-
 void qt::ProcessingFilter::saveConfig()
 {
-    cv::saveToYaml(m_glubschEffect.config, FileSystem::provideGlubschConfigPath());
+    cv::saveToYaml(m_glubschEffect.config, FileSystem::glubschConfigPath());
+}
+
+void qt::ProcessingFilter::InputSocket::push(const QVideoFrame &frame)
+{
+    if (!frame.isValid())
+    {
+        logger::out << "frame is invalid";
+        return;
+    }
+
+    std::lock_guard lock(mutex);
+
+    if (QVideoFrame copyFrame(frame);    // shallow copy
+        copyFrame.map(QVideoFrame::ReadOnly))    // (map is a const member function)
+    {
+        img = copyFrame.toImage().convertToFormat(QImage::Format_BGR888);
+        copyFrame.unmap();
+        newImgAvailable = true;
+    }
+    else    // TODO: investigate why this happens on android when getting input from MediaPlayer
+        logger::out << "couldn't map video frame";
+}
+
+cv::Mat qt::ProcessingFilter::InputSocket::get()
+{
+    std::lock_guard lock(mutex);
+    if (newImgAvailable)
+    {
+        newImgAvailable = false;
+        return cv::Mat(img.height(), img.width(), CV_8UC3, img.bits(), img.bytesPerLine()).clone();
+    }
+    return cv::Mat();
+}
+
+void qt::ProcessingFilter::OutputSocket::push(const cv::Mat &img)
+{
+    if (mutex.try_lock())
+    {
+        if (pSink)
+            pSink->setVideoFrame(QVideoFrame(QImage(img.data, img.cols, img.rows, img.step, QImage::Format_BGR888)));
+        mutex.unlock();
+    }
+}
+
+void qt::ProcessingFilter::OutputSocket::setSink(QVideoSink *pNewSink)
+{
+    if (pNewSink == pSink)
+        return;
+    std::lock_guard lock(mutex);
+    pSink = pNewSink;
+}
+
+bool qt::ProcessingFilter::V4lSocket::setDevice(const std::string_view device)
+{
+    std::lock_guard lock(mutex);
+    pDevice = std::make_unique<cv::V4lLoopbackDevice>(device);
+    if (!pDevice->ok())
+        pDevice = nullptr;
+    return true;
+}
+
+void qt::ProcessingFilter::V4lSocket::clearDevice()
+{
+    std::lock_guard lock(mutex);
+    pDevice = nullptr;
+}
+
+void qt::ProcessingFilter::V4lSocket::push(const cv::Mat &img)
+{
+    std::lock_guard lock(mutex);
+    if (pDevice)
+        pDevice->push(img);
 }

@@ -1,35 +1,20 @@
 #pragma once
-#include "qt/ImageTransform.h"
-#include <QAbstractVideoFilter>
+#include "qt/ImageCapture.h"
+#include <QUrl>
+#include <QVideoFrame>
+#include <QVideoSink>
 #include <cv/FlashEffect.h>
 #include <cv/FpsEffect.h>
-#include <cv/GifCreate.h>
 #include <cv/GlubschEffect.h>
-#include <cv/OutputDevice.h>
+#include <cv/V4lLoopbackDevice.h>
+#include <spin_mutex.h>
 
 namespace qt {
 
-class ProcessingFilter;
-
-class ProcessingFilterRunnable : public QVideoFilterRunnable
-{
-public:
-    ProcessingFilterRunnable(ProcessingFilter &filter): QVideoFilterRunnable(), m_filter(filter) {}
-
-    QVideoFrame run(QVideoFrame *, const QVideoSurfaceFormat &, RunFlags) override;
-
-private:
-    void capture(const cv::Mat &img);
-
-    ProcessingFilter &m_filter;
-};
-
-class ProcessingFilter : public QAbstractVideoFilter
+class ProcessingFilter final : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int rotation READ getRotation WRITE setRotation NOTIFY rotationChanged)
-    Q_PROPERTY(
-      bool doCameraTransform READ getDoCameraTransform WRITE setDoCameraTransform NOTIFY doCameraTransformChanged)
+    Q_PROPERTY(bool outputMirrored READ getOutputMirrored WRITE setOutputMirrored NOTIFY outputMirroredChanged)
     Q_PROPERTY(bool showLandmarks READ getShowLandmarks WRITE setShowLandmarks NOTIFY showLandmarksChanged)
     Q_PROPERTY(double eyesDistort READ getEyesDistort WRITE setEyesDistort NOTIFY distortChanged)
     Q_PROPERTY(double noseDistort READ getNoseDistort WRITE setNoseDistort NOTIFY distortChanged)
@@ -39,50 +24,61 @@ class ProcessingFilter : public QAbstractVideoFilter
     Q_PROPERTY(bool distortAlways READ getDistortAlways WRITE setDistortAlways NOTIFY distortChanged)
     Q_PROPERTY(bool showFps READ getShowFps WRITE setShowFps NOTIFY showFpsChanged)
     Q_PROPERTY(bool gifEnabled READ gifEnabled CONSTANT)
-    Q_PROPERTY(bool capturingGif READ capturingGif NOTIFY capturingGifChanged)
-    Q_PROPERTY(bool processingGif READ processingGif NOTIFY processingGifChanged)
-    Q_PROPERTY(bool streamingToOutputPossible MEMBER m_streamingToOutputPossible CONSTANT)
-    Q_PROPERTY(bool streamingToOutputDevice READ streamingToOutputDevice NOTIFY streamingToOutputDeviceChanged)
-
-    friend ProcessingFilterRunnable;
+    Q_PROPERTY(bool collectingCapture READ collectingCapture NOTIFY collectingCaptureChanged)
+    Q_PROPERTY(bool processingCapture READ processingCapture NOTIFY processingCaptureChanged)
+    Q_PROPERTY(bool busyCapture READ busyCapture NOTIFY busyCaptureChanged)
+    Q_PROPERTY(bool v4lOutputPossible READ v4lOutputPossible CONSTANT)
+    Q_PROPERTY(bool v4lDeviceActice READ v4lDeviceActive NOTIFY v4lDeviceActiveChanged)
 
 public:
     ProcessingFilter(QObject *pParent = nullptr);
 
-    ~ProcessingFilter();
+    ~ProcessingFilter() override;
 
-    QVideoFilterRunnable *createFilterRunnable() override;
+    enum CaptureType
+    {
+        JPG,
+        GIF
+    };
+    Q_ENUM(CaptureType);
 
 signals:
-    void rotationChanged();
-    void doCameraTransformChanged();
+    void outputMirroredChanged();
     void showLandmarksChanged();
     void distortChanged();
     void showFpsChanged();
-    void capturingGifChanged();
-    void processingGifChanged();
-    void streamingToOutputDeviceChanged();
+    void collectingCaptureChanged();
+    void processingCaptureChanged();
+    void busyCaptureChanged();
+    void v4lDeviceActiveChanged();
 
 public slots:
+    QVideoSink *videoSink() { return &m_inputSocket.sink; }
 
-    void capture() { m_captureNext = true; }
+    void setOutputSink(QVideoSink *pSink) { m_outputSocket.setSink(pSink); }
 
-    void captureGif();
+    void capture(CaptureType);
 
-    void streamToOutputDevice(const QString &device);
+    void setV4lDevice(const QString &device)
+    {
+        m_v4lSocket.setDevice(device.toStdString());
+        emit v4lDeviceActiveChanged();
+    }
 
-    void stopStreamingToOutputDevice();
+    void clearV4lDevice()
+    {
+        m_v4lSocket.clearDevice();
+        emit v4lDeviceActiveChanged();
+    }
 
     void saveConfig();
 
-protected:
-    void setRotation(int rotation) { m_imgTransform.setRotation(rotation); }
+private:
+    void onInputFrame(const QVideoFrame &frame);
 
-    int getRotation() const { return m_imgTransform.getRotation(); }
+    void setOutputMirrored(bool outputMirrored) { m_outputMirrored = outputMirrored; }
 
-    void setDoCameraTransform(bool doTransform) { m_imgTransform.setDoCameraTransform(doTransform); }
-
-    bool getDoCameraTransform() const { return m_imgTransform.getDoCameraTransform(); }
+    bool getOutputMirrored() const { return m_outputMirrored; }
 
     void setShowLandmarks(bool show);
 
@@ -120,23 +116,62 @@ protected:
 
     double getLowerHeadDistort() const { return getDistort(cv::FaceDistortionType::LowerHead); }
 
-    static bool gifEnabled() { return cv::GifCreate::implemented(); }
+    static bool gifEnabled() { return qt::ImageCapture::gifImplemented(); }
 
-    bool capturingGif() const { return m_gifCreator.collecting(); }
+    bool collectingCapture() const { return m_imageCapture.collecting(); }
 
-    bool processingGif() const { return m_gifCreator.processing(); }
+    bool processingCapture() const { return m_imageCapture.processing(); }
 
-    bool streamingToOutputDevice() const { return m_pOutputDevice != nullptr; }
+    bool busyCapture() const { return m_imageCapture.busy(); }
 
-    ImageTransform m_imgTransform;
+    std::atomic<bool> m_processing{false};
+    bool m_processingThreadShouldRun = true;
+
     cv::GlubschEffect m_glubschEffect;
     cv::FlashEffect m_flashEffect;
     cv::FpsEffect m_fpsEffect;
-    cv::GifCreate m_gifCreator;
-    ProcessingFilterRunnable *m_pRunnable = nullptr;
+    qt::ImageCapture m_imageCapture;
+
     bool m_captureNext = false;
-    static constexpr bool m_streamingToOutputPossible = cv::OutputDevice::implemented();
-    std::unique_ptr<cv::OutputDevice> m_pOutputDevice;
+    bool m_outputMirrored = false;
+
+    struct InputSocket
+    {
+        void push(const QVideoFrame &);
+        cv::Mat get();
+
+        QVideoSink sink;
+        QImage img;
+        bool newImgAvailable = false;
+        spin_mutex mutex;
+    };
+    InputSocket m_inputSocket;
+
+    struct OutputSocket
+    {
+        void setSink(QVideoSink *pNewSink);
+        void push(const cv::Mat &img);
+
+        spin_mutex mutex;
+        QVideoSink *pSink = nullptr;
+    };
+    OutputSocket m_outputSocket;
+
+    struct V4lSocket
+    {
+        bool setDevice(std::string_view device);
+
+        void clearDevice();
+
+        void push(const cv::Mat &img);
+
+        spin_mutex mutex;
+        std::unique_ptr<cv::V4lLoopbackDevice> pDevice;
+    };
+    V4lSocket m_v4lSocket;
+
+    static constexpr bool v4lOutputPossible() { return cv::V4lLoopbackDevice::implemented(); }
+    bool v4lDeviceActive() const { return m_v4lSocket.pDevice != nullptr; }
 };
 
 }    // namespace qt

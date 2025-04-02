@@ -1,5 +1,6 @@
 #include "cv/ImageUtils.h"
 #include "cv/Utils2D.h"
+#include <omp.h>
 
 namespace cv {
 
@@ -35,6 +36,7 @@ void ImageUtils::distort(Mat &io_img, const BarrelInfo &barrelInfo)
     const auto brInfo = infoRect.br();
     Mat infoImg = io_img(infoRect).clone();
 
+    // OpenCV memory order is row first, so parallelizing row processing should be better than columns
     const auto processRow = [&](int row) {
         for (int col = tlInfo.x; col <= brInfo.x; ++col)
         {
@@ -51,7 +53,7 @@ void ImageUtils::distort(Mat &io_img, const BarrelInfo &barrelInfo)
         }
     };
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(4)
     for (int row = tlInfo.y; row < brInfo.y; ++row)
         processRow(row);
 

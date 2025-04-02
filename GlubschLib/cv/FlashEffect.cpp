@@ -1,4 +1,5 @@
 #include "cv/FlashEffect.h"
+#include <numbers>
 
 using namespace std::chrono;
 
@@ -18,7 +19,7 @@ void cv::FlashEffect::process(Mat &io_img)
             m_flashing = false;
         else
         {
-            static constexpr double twoPi = 6.2831853071795862;    // 8.0*std::atan(1.0);
+            static constexpr double twoPi = 2.0 * std::numbers::pi;
             const auto toAdd = saturate_cast<uchar>(-127.5 * std::cos(diffTime * twoPi / m_duration) + 127.5);
             io_img += cv::Scalar(toAdd, toAdd, toAdd);
         }
