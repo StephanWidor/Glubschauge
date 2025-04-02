@@ -1,6 +1,6 @@
 #include "cv/FaceDetection.h"
-#include "logger.h"
 #include "cv/ImageUtils.h"
+#include "logger.h"
 
 namespace cv {
 
@@ -30,10 +30,20 @@ std::pair<FaceDetection::BBoxes, std::vector<FaceDetection::Landmarks>> FaceDete
 {
     if (m_dataLoaded)
     {
-        BBoxes bboxes = findBBoxes(img);
-        std::vector<Landmarks> landmarks;
-        m_facemark->fit(img, bboxes, landmarks);
-        return {bboxes, landmarks};
+        try
+        {
+            // TODO: investigate why this can throw
+            BBoxes bboxes = findBBoxes(img);
+            std::vector<Landmarks> landmarks;
+            m_facemark->fit(img, bboxes, landmarks);
+            return {bboxes, landmarks};
+        }
+        catch (cv::Exception &e)
+        {
+            // TODO: find out why this happens sometimes
+            logger::out << "caught exception from OpenCV:";
+            logger::out << e.what();
+        }
     }
     return {};
 }
@@ -41,7 +51,8 @@ std::pair<FaceDetection::BBoxes, std::vector<FaceDetection::Landmarks>> FaceDete
 std::vector<Rect> FaceDetection::findBBoxes(const Mat &img)
 {
     cv::Mat processImg;
-    const auto scaleFactor = ImageUtils::fitToSize(img, Size(240, 240), true, processImg);
+    const Size fittingSize(240, 240);
+    const auto scaleFactor = ImageUtils::fitToSize(img, fittingSize, true, processImg);
     if (scaleFactor == HUGE_VAL)
         return {};
     if (processImg.channels() == 3)
