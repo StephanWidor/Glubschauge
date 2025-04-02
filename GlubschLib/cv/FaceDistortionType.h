@@ -18,7 +18,7 @@ enum class FaceDistortionType : size_t
 };
 
 using FaceDistortions = std::array<double, static_cast<size_t>(FaceDistortionType::Num)>;
-constexpr FaceDistortions defaultFaceDistortions{1.0, 0.0, 1.0, 0.0, 0.0};
+constexpr FaceDistortions defaultFaceDistortions{0.3, 0.9, 0.1, 0.1, 0.0};
 
 constexpr double get(const FaceDistortions &distortions, const FaceDistortionType &type)
 {
