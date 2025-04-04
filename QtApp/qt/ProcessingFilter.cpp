@@ -6,10 +6,12 @@
 #include <logger.h>
 #include <thread>
 
-qt::ProcessingFilter::ProcessingFilter(QObject *pParent)
+namespace qt {
+
+ProcessingFilter::ProcessingFilter(QObject *pParent)
     : QObject(pParent)
-    , m_glubschEffect(Assets::provideCascadeData().string(), Assets::provideFacemarkData().string(),
-                      cv::loadGlubschConfigFromYaml(FileSystem::glubschConfigPath()))
+    , m_glubschEffect(provideCascadeData().string(), provideFacemarkData().string(),
+                      cv::loadGlubschConfigFromYaml(glubschConfigPath()))
 {
     connect(&m_inputSocket.sink, &QVideoSink::videoFrameChanged, this, &ProcessingFilter::onInputFrame);
     connect(&m_imageCapture, &qt::ImageCapture::stateChanged, [this](ImageCapture::State) {
@@ -41,21 +43,21 @@ qt::ProcessingFilter::ProcessingFilter(QObject *pParent)
     processingThread.detach();
 }
 
-qt::ProcessingFilter::~ProcessingFilter()
+ProcessingFilter::~ProcessingFilter()
 {
-    cv::saveToYaml(m_glubschEffect.config, FileSystem::glubschConfigPath());
+    cv::saveToYaml(m_glubschEffect.config, glubschConfigPath());
     m_processingThreadShouldRun = false;
     disconnect(&m_inputSocket.sink, &QVideoSink::videoFrameChanged, this, &ProcessingFilter::onInputFrame);
     while (m_processing.load(std::memory_order::acquire))
         ;
 }
 
-void qt::ProcessingFilter::onInputFrame(const QVideoFrame &frame)
+void ProcessingFilter::onInputFrame(const QVideoFrame &frame)
 {
     m_inputSocket.push(frame);
 }
 
-void qt::ProcessingFilter::capture(const CaptureType type)
+void ProcessingFilter::capture(const CaptureType type)
 {
     switch (type)
     {
@@ -73,7 +75,7 @@ void qt::ProcessingFilter::capture(const CaptureType type)
     }
 }
 
-void qt::ProcessingFilter::setShowLandmarks(bool show)
+void ProcessingFilter::setShowLandmarks(bool show)
 {
     if (m_glubschEffect.config.drawLandmarks != show)
     {
@@ -82,13 +84,13 @@ void qt::ProcessingFilter::setShowLandmarks(bool show)
     }
 }
 
-void qt::ProcessingFilter::setDistortAlways(bool distort)
+void ProcessingFilter::setDistortAlways(bool distort)
 {
     if (m_glubschEffect.config.distortAlways != distort)
         m_glubschEffect.config.distortAlways = distort;
 }
 
-void qt::ProcessingFilter::setShowFps(bool show)
+void ProcessingFilter::setShowFps(bool show)
 {
     if (m_fpsEffect.enabled() != show)
     {
@@ -97,7 +99,7 @@ void qt::ProcessingFilter::setShowFps(bool show)
     }
 }
 
-void qt::ProcessingFilter::setDistort(cv::FaceDistortionType type, double factor)
+void ProcessingFilter::setDistort(cv::FaceDistortionType type, double factor)
 {
     if (getDistort(type) != factor)
     {
@@ -106,12 +108,12 @@ void qt::ProcessingFilter::setDistort(cv::FaceDistortionType type, double factor
     }
 }
 
-void qt::ProcessingFilter::saveConfig()
+void ProcessingFilter::saveConfig()
 {
-    cv::saveToYaml(m_glubschEffect.config, FileSystem::glubschConfigPath());
+    cv::saveToYaml(m_glubschEffect.config, glubschConfigPath());
 }
 
-void qt::ProcessingFilter::InputSocket::push(const QVideoFrame &frame)
+void ProcessingFilter::InputSocket::push(const QVideoFrame &frame)
 {
     if (!frame.isValid())
     {
@@ -132,7 +134,7 @@ void qt::ProcessingFilter::InputSocket::push(const QVideoFrame &frame)
         logger::out << "couldn't map video frame";
 }
 
-cv::Mat qt::ProcessingFilter::InputSocket::get()
+cv::Mat ProcessingFilter::InputSocket::get()
 {
     std::lock_guard lock(mutex);
     if (newImgAvailable)
@@ -143,7 +145,7 @@ cv::Mat qt::ProcessingFilter::InputSocket::get()
     return cv::Mat();
 }
 
-void qt::ProcessingFilter::OutputSocket::push(const cv::Mat &img)
+void ProcessingFilter::OutputSocket::push(const cv::Mat &img)
 {
     if (mutex.try_lock())
     {
@@ -153,7 +155,7 @@ void qt::ProcessingFilter::OutputSocket::push(const cv::Mat &img)
     }
 }
 
-void qt::ProcessingFilter::OutputSocket::setSink(QVideoSink *pNewSink)
+void ProcessingFilter::OutputSocket::setSink(QVideoSink *pNewSink)
 {
     if (pNewSink == pSink)
         return;
@@ -161,7 +163,7 @@ void qt::ProcessingFilter::OutputSocket::setSink(QVideoSink *pNewSink)
     pSink = pNewSink;
 }
 
-bool qt::ProcessingFilter::V4lSocket::setDevice(const std::string_view device)
+bool ProcessingFilter::V4lSocket::setDevice(const std::string_view device)
 {
     std::lock_guard lock(mutex);
     pDevice = std::make_unique<cv::V4lLoopbackDevice>(device);
@@ -170,15 +172,17 @@ bool qt::ProcessingFilter::V4lSocket::setDevice(const std::string_view device)
     return true;
 }
 
-void qt::ProcessingFilter::V4lSocket::clearDevice()
+void ProcessingFilter::V4lSocket::clearDevice()
 {
     std::lock_guard lock(mutex);
     pDevice = nullptr;
 }
 
-void qt::ProcessingFilter::V4lSocket::push(const cv::Mat &img)
+void ProcessingFilter::V4lSocket::push(const cv::Mat &img)
 {
     std::lock_guard lock(mutex);
     if (pDevice)
         pDevice->push(img);
 }
+
+}    // namespace qt

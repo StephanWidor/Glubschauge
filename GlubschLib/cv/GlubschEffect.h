@@ -1,7 +1,7 @@
 #pragma once
 #include "NumberSmoothing.h"
 #include "cv/FaceDetection.h"
-#include "cv/FaceDistortionType.h"
+#include "cv/FaceDistortion.h"
 #include <filesystem>
 
 namespace cv {

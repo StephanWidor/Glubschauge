@@ -1,7 +1,5 @@
 #include "FpsCounter.h"
 
-using namespace std::chrono;
-
 void FpsCounter::start(const std::function<void(double)> &callbackAfterEval, std::chrono::milliseconds evalTime)
 {
     if (!m_running)
@@ -10,7 +8,7 @@ void FpsCounter::start(const std::function<void(double)> &callbackAfterEval, std
         m_fps = 0.0;
         m_evalTime = evalTime;
         m_callbackAfterEval = callbackAfterEval;
-        m_startTime = system_clock::now();
+        m_startTime = std::chrono::system_clock::now();
         m_running = true;
     }
 }

@@ -1,6 +1,4 @@
 #pragma once
-#include "cv/Utils2D.h"
-
 #include <opencv2/face.hpp>
 #include <opencv2/opencv.hpp>
 
@@ -25,6 +23,10 @@ public:
         InnerLip
     };
 
+    FaceDetection(const std::string &cascadeDataPath, const std::string &facemarkDataPath);
+
+    std::pair<BBoxes, std::vector<Landmarks>> detect(const Mat &img);
+
     static Landmarks filter(const Landmarks &landmarks68, LandmarksType);
 
     template<typename... LandmarksTypes>
@@ -36,16 +38,10 @@ public:
         return landmarks0;
     }
 
-    FaceDetection(const std::string &cascadeDataPath, const std::string &facemarkDataPath);
-
-    std::pair<BBoxes, std::vector<Landmarks>> detect(const Mat &img);
-
 private:
     bool loadData(const std::string &cascadeDataPath, const std::string &facemarkDataPath);
 
     std::vector<Rect> findBBoxes(const Mat &img);
-
-    ContourVector getLandmarkContours(const std::vector<Point2f> &landmarks);
 
     bool m_dataLoaded = false;
     CascadeClassifier m_faceDetector;

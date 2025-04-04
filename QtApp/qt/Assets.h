@@ -3,12 +3,8 @@
 
 namespace qt {
 
-class Assets
-{
-public:
-    static std::filesystem::path provideCascadeData();
+std::filesystem::path provideCascadeData();
 
-    static std::filesystem::path provideFacemarkData();
-};
+std::filesystem::path provideFacemarkData();
 
 }    // namespace qt

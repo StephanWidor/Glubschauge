@@ -5,9 +5,8 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(HEADERS
-    cv/BarrelCreation.h
     cv/FaceDetection.h
-    cv/FaceDistortionType.h
+    cv/FaceDistortion.h
     cv/FlashEffect.h
     cv/FpsEffect.h
     cv/GlubschEffect.h
@@ -22,8 +21,8 @@ set(HEADERS
     spin_mutex.h
     )
 set(SOURCES
-    cv/BarrelCreation.cpp
     cv/FaceDetection.cpp
+    cv/FaceDistortion.cpp
     cv/FlashEffect.cpp
     cv/FpsEffect.cpp
     cv/GlubschEffect.cpp

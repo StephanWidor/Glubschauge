@@ -3,16 +3,12 @@
 
 namespace qt {
 
-class FileSystem
-{
-public:
-    static void moveToUserChoiceDir(const std::filesystem::path &);
+void moveToUserChoiceDir(const std::filesystem::path &);
 
-    static std::filesystem::path appDataDir();
+std::filesystem::path appDataDir();
 
-    static std::filesystem::path picturesDir();
+std::filesystem::path picturesDir();
 
-    static std::filesystem::path glubschConfigPath();
-};
+std::filesystem::path glubschConfigPath();
 
 }    // namespace qt

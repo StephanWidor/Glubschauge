@@ -1,15 +1,15 @@
 #include "cv/FpsEffect.h"
 
-using namespace std::chrono;
+namespace cv {
 
-void cv::FpsEffect::process(Mat &io_img)
+void FpsEffect::process(Mat &io_img)
 {
     const auto fps = static_cast<int>(std::round(m_counter.tick()));
     if (fps > 0)
         drawText(io_img, String(std::to_string(fps) + " fps"));
 }
 
-void cv::FpsEffect::drawText(Mat &io_img, const String &text)
+void FpsEffect::drawText(Mat &io_img, const String &text)
 {
     const int fontFace = FONT_HERSHEY_DUPLEX;
     const double fontScale = 1.0;
@@ -21,3 +21,5 @@ void cv::FpsEffect::drawText(Mat &io_img, const String &text)
     const Vec3b textColor(imgColor[0] > 127 ? 0 : 255, imgColor[1] > 127 ? 0 : 255, imgColor[2] > 127 ? 0 : 255);
     putText(io_img, text, textOrigin, fontFace, fontScale, textColor, thickness, 8);
 }
+
+}    // namespace cv

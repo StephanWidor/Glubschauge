@@ -1,20 +1,20 @@
 #include "cv/FlashEffect.h"
 #include <numbers>
 
-using namespace std::chrono;
+namespace cv {
 
-void cv::FlashEffect::trigger()
+void FlashEffect::trigger()
 {
-    m_startTime = system_clock::now();
+    m_startTime = std::chrono::system_clock::now();
     m_flashing = true;
 }
 
-void cv::FlashEffect::process(Mat &io_img)
+void FlashEffect::process(Mat &io_img)
 {
     if (m_flashing)
     {
-        const auto diffTime =
-          static_cast<double>(duration_cast<milliseconds>(system_clock::now() - m_startTime).count());
+        const auto diffTime = static_cast<double>(
+          duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - m_startTime).count());
         if (diffTime > m_duration)
             m_flashing = false;
         else
@@ -25,3 +25,5 @@ void cv::FlashEffect::process(Mat &io_img)
         }
     }
 }
+
+}    // namespace cv

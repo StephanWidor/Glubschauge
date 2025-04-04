@@ -1,6 +1,7 @@
 #include "cv/GlubschEffect.h"
-#include "cv/BarrelCreation.h"
+#include "cv/FaceDistortion.h"
 #include "cv/MouthOpen.h"
+#include "cv/Utils2D.h"
 #include "logger.h"
 
 namespace cv {
@@ -60,18 +61,18 @@ void GlubschEffect::process(Mat &io_img)
         const auto [faceBBoxes, landmarks] = m_faceDetection.detect(io_img);
         if (config.drawLandmarks)
         {
-            drawContours(io_img, Utils2D::toContours(faceBBoxes), -1, g_drawColor, 2);
+            drawContours(io_img, toContours(faceBBoxes), -1, g_drawColor, 2);
             for (const auto &faceLandmarks : landmarks)
             {
                 for (const auto &point : faceLandmarks)
-                    circle(io_img, Utils2D::round(point), 1, g_drawColor, 2);
+                    circle(io_img, round(point), 1, g_drawColor, 2);
             }
         }
         if (doDistort)
         {
-            const auto power = m_smoothing.push(config.distortAlways ? 1.0 : 4.0 * MouthOpen::calcAverage(landmarks));
+            const auto power = m_smoothing.push(config.distortAlways ? 1.0 : 4.0 * averageMouthOpenFactor(landmarks));
             if (power > 0.0)
-                ImageUtils::distort(io_img, BarrelCreation::createBarrelInfos(landmarks, power, config.distortions));
+                distort(io_img, createBarrelInfos(landmarks, power, config.distortions));
         }
     }
 }

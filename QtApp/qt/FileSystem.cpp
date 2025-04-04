@@ -5,7 +5,9 @@
 #include <format>
 #include <logger.h>
 
-void qt::FileSystem::moveToUserChoiceDir(const std::filesystem::path &path)
+namespace qt {
+
+void moveToUserChoiceDir(const std::filesystem::path &path)
 {
     QFileDialog fileDialog(nullptr, "Save Captured Image",
                            QStandardPaths::writableLocation(QStandardPaths::PicturesLocation),
@@ -34,7 +36,7 @@ void qt::FileSystem::moveToUserChoiceDir(const std::filesystem::path &path)
     std::filesystem::remove(path);
 }
 
-std::filesystem::path qt::FileSystem::appDataDir()
+std::filesystem::path appDataDir()
 {
     auto dir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation).toStdString();
     if (!std::filesystem::exists(dir))
@@ -42,7 +44,7 @@ std::filesystem::path qt::FileSystem::appDataDir()
     return dir;
 }
 
-std::filesystem::path qt::FileSystem::picturesDir()
+std::filesystem::path picturesDir()
 {
 #ifdef ANDROID
     return QStandardPaths::writableLocation(QStandardPaths::PicturesLocation).toStdString();
@@ -55,7 +57,9 @@ std::filesystem::path qt::FileSystem::picturesDir()
 #endif
 }
 
-std::filesystem::path qt::FileSystem::glubschConfigPath()
+std::filesystem::path glubschConfigPath()
 {
     return appDataDir() / "GlubschConfig.yaml";
 }
+
+}    // namespace qt

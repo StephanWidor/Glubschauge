@@ -1,5 +1,6 @@
 #include "cv/FaceDetection.h"
 #include "cv/ImageUtils.h"
+#include "cv/Utils2D.h"
 #include "logger.h"
 
 namespace cv {
@@ -52,7 +53,7 @@ std::vector<Rect> FaceDetection::findBBoxes(const Mat &img)
 {
     cv::Mat processImg;
     const Size fittingSize(240, 240);
-    const auto scaleFactor = ImageUtils::fitToSize(img, fittingSize, true, processImg);
+    const auto scaleFactor = fitToSize(img, fittingSize, true, processImg);
     if (scaleFactor == HUGE_VAL)
         return {};
     if (processImg.channels() == 3)
@@ -64,7 +65,7 @@ std::vector<Rect> FaceDetection::findBBoxes(const Mat &img)
     {
         const auto backScaleFactor = 1.0 / scaleFactor;
         for (auto &box : bboxes)
-            box = Utils2D::scale(box, backScaleFactor);
+            box = scale(box, backScaleFactor);
     }
     return bboxes;
 }

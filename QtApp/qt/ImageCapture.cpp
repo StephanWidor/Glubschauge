@@ -7,6 +7,8 @@
 #include <logger.h>
 #include <sstream>
 
+namespace qt {
+
 namespace {
 
 std::filesystem::path generateFilePath(const std::string_view fileEnding)
@@ -15,25 +17,25 @@ std::filesystem::path generateFilePath(const std::string_view fileEnding)
     const auto tm = *std::localtime(&t);
     std::ostringstream oss;
     oss << std::put_time(&tm, "%Y%m%d_%H%M%S");
-    return qt::FileSystem::picturesDir() / std::format("glubsch_{}.{}", oss.str(), fileEnding);
+    return picturesDir() / std::format("glubsch_{}.{}", oss.str(), fileEnding);
 }
 
 }    // namespace
 
-qt::ImageCapture::~ImageCapture()
+ImageCapture::~ImageCapture()
 {
     // busy wait until gif saving has finished
     while (state() != Idle)
         ;
 }
 
-void qt::ImageCapture::startJPG()
+void ImageCapture::startJPG()
 {
     if (state() == Idle)
         setState(CollectingJPG);
 }
 
-void qt::ImageCapture::startGIF(std::chrono::milliseconds duration)
+void ImageCapture::startGIF(std::chrono::milliseconds duration)
 {
     if (state() == Idle)
     {
@@ -43,9 +45,8 @@ void qt::ImageCapture::startGIF(std::chrono::milliseconds duration)
     }
 }
 
-void qt::ImageCapture::push(const cv::Mat &img)
+void ImageCapture::push(const cv::Mat &img)
 {
-    using namespace std::chrono;
     if (state() >= CollectingJPG)
     {
         m_gifContainer.push(img);
@@ -60,7 +61,7 @@ void qt::ImageCapture::push(const cv::Mat &img)
                     if (!cv::imwrite(filePath.string(), imgCopy))
                         logger::out << std::format("failed to save {}", filePath.string());
 #ifdef ANDROID
-                    FileSystem::moveToUserChoiceDir(filePath);
+                    moveToUserChoiceDir(filePath);
 #endif
                     setState(Idle);
                 });
@@ -70,7 +71,8 @@ void qt::ImageCapture::push(const cv::Mat &img)
             case CollectingGIF:
             {
                 m_gifContainer.push(img);
-                if (const auto diffTime = duration_cast<milliseconds>(system_clock::now() - m_startTime);
+                if (const auto diffTime =
+                      duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - m_startTime);
                     diffTime >= m_gifDuration)
                 {
                     setState(ProcessingGIF);
@@ -80,7 +82,7 @@ void qt::ImageCapture::push(const cv::Mat &img)
                             logger::out << std::format("failed to save {}", filePath.string());
                         m_gifContainer.clear();
 #ifdef ANDROID
-                        FileSystem::moveToUserChoiceDir(filePath);
+                        moveToUserChoiceDir(filePath);
 #endif
                         setState(Idle);
                     });
@@ -93,3 +95,5 @@ void qt::ImageCapture::push(const cv::Mat &img)
         }
     }
 }
+
+}    // namespace qt
