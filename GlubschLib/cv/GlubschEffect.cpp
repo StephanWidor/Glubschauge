@@ -24,7 +24,7 @@ GlubschConfig loadGlubschConfigFromYaml(const std::filesystem::path &path)
     }
     catch (std::exception &e)
     {
-        logger::out << ("Failed to load GlubschConfig from " + path.string()).c_str();
+        logger::out << std::format("Failed to load GlubschConfig from {}", path.string());
         logger::out << "Will use default configuration";
     }
     return config;
@@ -46,7 +46,7 @@ bool saveToYaml(const GlubschConfig &config, const std::filesystem::path &path)
     }
     catch (...)
     {
-        logger::out << "Failed to save GlubschConfig to " << path.c_str();
+        logger::out << std::format("Failed to save GlubschConfig to {}", path.string());
     }
     return false;
 }

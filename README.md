@@ -81,20 +81,20 @@ Not tested, but might well work doing something like
 ```
 mkdir build
 cd build
-cmake -DCMAKE_PREFIX_PATH=PATH_TO_YOUR_QT_INSTALL/clang_64
+cmake -DCMAKE_PREFIX_PATH=PATH_TO_YOUR_QT_INSTALL/clang_64 ..
 cmake --build . -j
 ```
 
 ## Windows
 
-Also not tested, but might well work doing something like
+Tested on Windows 11 using VS 2022
 
 ```
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=PATH_TO_YOUR_QT_INSTALL\msvc2019_64
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=PATH_TO_YOUR_QT_INSTALL\msvc2022_64 ..
 cmake --build . --config Release -j
-PATH_TO_YOUR_QT_INSTALL\bin\windeployqt\ --release --qmldir ..\qml Release\Glubschauge.exe
+PATH_TO_YOUR_QT_INSTALL\bin\windeployqt --release --qmldir ..\QtApp\qml QtApp\Release\Glubschauge.exe
 ```
 
 # Known Issues

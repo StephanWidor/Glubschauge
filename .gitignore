@@ -72,6 +72,4 @@ CMakeLists.txt.user
 *.dll
 *.exe
 
-build
-android_build
-OpenCV/OpenCV-*
+build*

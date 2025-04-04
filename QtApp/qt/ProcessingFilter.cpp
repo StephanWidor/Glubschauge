@@ -8,7 +8,7 @@
 
 qt::ProcessingFilter::ProcessingFilter(QObject *pParent)
     : QObject(pParent)
-    , m_glubschEffect(Assets::provideCascadeData().native(), Assets::provideFacemarkData().native(),
+    , m_glubschEffect(Assets::provideCascadeData().string(), Assets::provideFacemarkData().string(),
                       cv::loadGlubschConfigFromYaml(FileSystem::glubschConfigPath()))
 {
     connect(&m_inputSocket.sink, &QVideoSink::videoFrameChanged, this, &ProcessingFilter::onInputFrame);

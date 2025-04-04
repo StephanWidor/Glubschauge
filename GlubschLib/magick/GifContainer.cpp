@@ -34,7 +34,7 @@ bool magick::GifContainer::save(const std::filesystem::path &file, std::chrono::
 
 #else    // IMAGEMAGICK_AVAILABLE
 
-bool magick::GifContainer::save(const std::string &, std::chrono::milliseconds)
+bool magick::GifContainer::save(const std::filesystem::path &, std::chrono::milliseconds)
 {
     return false;
 }

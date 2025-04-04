@@ -9,7 +9,7 @@ void qt::FileSystem::moveToUserChoiceDir(const std::filesystem::path &path)
 {
     QFileDialog fileDialog(nullptr, "Save Captured Image",
                            QStandardPaths::writableLocation(QStandardPaths::PicturesLocation),
-                           QString(std::format("Images (*{})", path.extension().c_str()).c_str()));
+                           QString(std::format("Images (*{})", path.extension().string()).c_str()));
     fileDialog.setAcceptMode(QFileDialog::AcceptSave);
     fileDialog.setFileMode(QFileDialog::AnyFile);
     fileDialog.setViewMode(QFileDialog::List);

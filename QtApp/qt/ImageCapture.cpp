@@ -57,8 +57,8 @@ void qt::ImageCapture::push(const cv::Mat &img)
                 // we use QThread because moveToPictures uses QFileDialog, which is unhappy being started from std::thread
                 auto qThread = QThread::create([this, imgCopy = img.clone()]() {
                     const auto filePath = generateFilePath("jpg");
-                    if (!cv::imwrite(filePath.native(), imgCopy))
-                        logger::out << "failed to save " << filePath.native();
+                    if (!cv::imwrite(filePath.string(), imgCopy))
+                        logger::out << std::format("failed to save {}", filePath.string());
 #ifdef ANDROID
                     FileSystem::moveToUserChoiceDir(filePath);
 #endif
@@ -77,7 +77,7 @@ void qt::ImageCapture::push(const cv::Mat &img)
                     auto qThread = QThread::create([diffTime, this]() {
                         const auto filePath = generateFilePath("gif");
                         if (!m_gifContainer.save(filePath.native(), diffTime))
-                            logger::out << "failed to save " << filePath.native();
+                            logger::out << std::format("failed to save {}", filePath.string());
                         m_gifContainer.clear();
 #ifdef ANDROID
                         FileSystem::moveToUserChoiceDir(filePath);

@@ -10,7 +10,7 @@ std::filesystem::path provideCopiedResource(const std::string &resourceFileName)
 {
     const auto copiedResourcePath = qt::FileSystem::appDataDir() / resourceFileName;
     if (std::filesystem::exists(copiedResourcePath) ||
-        QFile::copy(":/" + QString::fromStdString(resourceFileName), QString::fromStdString(copiedResourcePath)))
+        QFile::copy(":/" + QString::fromStdString(resourceFileName), QString(copiedResourcePath.native().c_str())))
     {
         return copiedResourcePath;
     }
