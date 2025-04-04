@@ -16,7 +16,7 @@ int main(int, char *[])
         return std::filesystem::temp_directory_path() / "GlubschConfig.yaml";
     }();
 
-    cv::GlubschEffect glubschEffect("haarcascade_frontalface_alt2.xml", "lbfmodel.yaml",
+    cv::GlubschEffect glubschEffect("haarcascade_frontalface_default.xml", "lbfmodel.yaml",
                                     cv::loadGlubschConfigFromYaml(configPath));
     auto &config = glubschEffect.config;
     std::optional<cv::V4lLoopbackDevice> outputStream;
@@ -126,6 +126,7 @@ int main(int, char *[])
         std::cerr << "ERROR! Unable to open camera\n";
         return -1;
     }
+
     while (run)
     {
         if (cap.read(frame))
