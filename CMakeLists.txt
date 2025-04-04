@@ -4,8 +4,10 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-option(BUILD_QT_APP "Build Qt App requiring Qt dev framework installed" ON)
+find_package(Qt6 QUIET)
+
 include(CMakeDependentOption)
+cmake_dependent_option(BUILD_QT_APP "Build Qt App" ON "DEFINED Qt6_DIR" OFF)
 cmake_dependent_option(BUILD_OCV_HIGHGUI_APP "Build App using OCV's highgui module" ON
                        "NOT ANDROID" OFF)
 
