@@ -6,6 +6,7 @@
 #include <cv/FlashEffect.h>
 #include <cv/FpsEffect.h>
 #include <cv/GlubschEffect.h>
+#include <cv/SaveUtils.h>
 #include <cv/V4lLoopbackDevice.h>
 #include <spin_mutex.h>
 
@@ -138,10 +139,11 @@ private:
     struct InputSocket
     {
         void push(const QVideoFrame &);
-        cv::Mat get();
+        cv::TimeStampedImg get();
 
         QVideoSink sink;
         QImage img;
+        cv::TimeStamp timeStamp;
         bool newImgAvailable = false;
         spin_mutex mutex;
     };

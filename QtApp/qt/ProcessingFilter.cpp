@@ -24,12 +24,13 @@ ProcessingFilter::ProcessingFilter(QObject *pParent)
     std::thread processingThread([&]() {
         while (m_processingThreadShouldRun)
         {
-            auto img = m_inputSocket.get();
+            auto timeStampedImg = m_inputSocket.get();
+            auto &img = timeStampedImg.first;
             if (img.empty())
                 continue;
 
             m_glubschEffect.process(img);
-            m_imageCapture.push(img);
+            m_imageCapture.push(timeStampedImg);
             m_flashEffect.process(img);
             if (m_outputMirrored)
                 cv::flip(img, img, 1);
@@ -123,6 +124,8 @@ void ProcessingFilter::InputSocket::push(const QVideoFrame &frame)
 
     std::lock_guard lock(mutex);
 
+    timeStamp = std::chrono::system_clock::now();
+
     if (QVideoFrame copyFrame(frame);    // shallow copy
         copyFrame.map(QVideoFrame::ReadOnly))    // (map is a const member function)
     {
@@ -134,15 +137,16 @@ void ProcessingFilter::InputSocket::push(const QVideoFrame &frame)
         logger::out << "couldn't map video frame";
 }
 
-cv::Mat ProcessingFilter::InputSocket::get()
+cv::TimeStampedImg ProcessingFilter::InputSocket::get()
 {
     std::lock_guard lock(mutex);
     if (newImgAvailable)
     {
         newImgAvailable = false;
-        return cv::Mat(img.height(), img.width(), CV_8UC3, img.bits(), img.bytesPerLine()).clone();
+        return {cv::Mat(img.height(), img.width(), CV_8UC3, img.bits(), img.bytesPerLine()).clone(),
+                std::chrono::system_clock::now()};
     }
-    return cv::Mat();
+    return {cv::Mat(), std::chrono::system_clock::now()};
 }
 
 void ProcessingFilter::OutputSocket::push(const cv::Mat &img)

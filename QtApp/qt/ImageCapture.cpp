@@ -45,18 +45,17 @@ void ImageCapture::startGIF(std::chrono::milliseconds duration)
     }
 }
 
-void ImageCapture::push(const cv::Mat &img)
+void ImageCapture::push(const cv::TimeStampedImg &img)
 {
     if (state() >= CollectingJPG)
     {
-        m_gifContainer.push(img);
         switch (state())
         {
             case CollectingJPG:
             {
                 setState(ProcessingJPG);
                 // we use QThread because moveToPictures uses QFileDialog, which is unhappy being started from std::thread
-                auto qThread = QThread::create([this, imgCopy = img.clone()]() {
+                auto qThread = QThread::create([this, imgCopy = img.first.clone()]() {
                     const auto filePath = generateFilePath("jpg");
                     if (!cv::imwrite(filePath.string(), imgCopy))
                         logger::out << std::format("failed to save {}", filePath.string());
@@ -70,7 +69,7 @@ void ImageCapture::push(const cv::Mat &img)
             }
             case CollectingGIF:
             {
-                m_gifContainer.push(img);
+                m_images.push_back({img.first.clone(), img.second});
                 if (const auto diffTime =
                       duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - m_startTime);
                     diffTime >= m_gifDuration)
@@ -78,9 +77,9 @@ void ImageCapture::push(const cv::Mat &img)
                     setState(ProcessingGIF);
                     auto qThread = QThread::create([diffTime, this]() {
                         const auto filePath = generateFilePath("gif");
-                        if (!m_gifContainer.save(filePath.native(), diffTime))
+                        if (!cv::saveGif(m_images, filePath))
                             logger::out << std::format("failed to save {}", filePath.string());
-                        m_gifContainer.clear();
+                        m_images.clear();
 #ifdef ANDROID
                         moveToUserChoiceDir(filePath);
 #endif

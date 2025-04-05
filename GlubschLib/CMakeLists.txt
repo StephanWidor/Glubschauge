@@ -12,6 +12,7 @@ set(HEADERS
     cv/GlubschEffect.h
     cv/ImageUtils.h
     cv/MouthOpen.h
+    cv/SaveUtils.h
     cv/Utils2D.h
     cv/V4lLoopbackDevice.h
     FpsCounter.h
@@ -27,6 +28,7 @@ set(SOURCES
     cv/FpsEffect.cpp
     cv/GlubschEffect.cpp
     cv/ImageUtils.cpp
+    cv/SaveUtils.cpp
     cv/V4lLoopbackDevice.cpp
     FpsCounter.cpp
     magick/GifContainer.cpp

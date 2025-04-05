@@ -3,7 +3,7 @@
 #include <QString>
 #include <atomic>
 #include <chrono>
-#include <magick/GifContainer.h>
+#include <cv/SaveUtils.h>
 
 namespace qt {
 
@@ -15,13 +15,13 @@ public:
 
     ~ImageCapture() override;
 
-    static constexpr bool gifImplemented() { return magick::GifContainer::implemented(); }
+    static constexpr bool gifImplemented() { return cv::gifSaveAvailable(); }
 
     void startJPG();
 
     void startGIF(std::chrono::milliseconds duration);
 
-    void push(const cv::Mat &img);
+    void push(const cv::TimeStampedImg &img);
 
     enum State : std::uint8_t
     {
@@ -59,7 +59,8 @@ private:
     std::atomic<State> m_state{State::Idle};
     std::chrono::time_point<std::chrono::system_clock> m_startTime;
     std::chrono::milliseconds m_gifDuration{0};
-    magick::GifContainer m_gifContainer;
+
+    std::vector<cv::TimeStampedImg> m_images;
 };
 
 }    // namespace qt
