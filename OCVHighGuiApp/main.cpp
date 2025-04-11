@@ -1,74 +1,85 @@
+#include <cctype>
 #include <cv/GlubschEffect.h>
 #include <cv/V4lLoopbackDevice.h>
+#include <filesystem>
 #include <opencv2/opencv.hpp>
 #include <optional>
 
 int main(int, char *[])
 {
-    cv::namedWindow("Glubschauge", cv::WINDOW_AUTOSIZE);
-    cv::VideoCapture cap;
-    cv::Mat frame;
-    bool run{true};
-
     const auto configPath = []() {
         if (const auto home = std::getenv("HOME"))
             return std::filesystem::path{home} / ".local/share/Glubschauge/GlubschConfig.yaml";
         return std::filesystem::temp_directory_path() / "GlubschConfig.yaml";
     }();
 
+    cv::namedWindow("Glubschauge", cv::WINDOW_AUTOSIZE);
+    cv::VideoCapture cap;
+    cv::Mat frame;
+    bool run{true};
+    std::optional<cv::V4lLoopbackDevice> outputStream;
+
     cv::GlubschEffect glubschEffect("haarcascade_frontalface_default.xml", "lbfmodel.yaml",
                                     cv::loadGlubschConfigFromYaml(configPath));
     auto &config = glubschEffect.config;
-    std::optional<cv::V4lLoopbackDevice> outputStream;
 
-    const auto getDistort = [&](const cv::FaceDistortionType type) -> double {
-        return cv::get(config.distortions, type);
-    };
+    cv::FaceDistortionType distortionTypeToAdapt = cv::FaceDistortionType::Num;
 
-    const auto printDistortions = [&]() {
-        std::cout << "Distortions:\n";
-        std::cout << "\tEyes: " << getDistort(cv::FaceDistortionType::Eyes) << std::endl;
-        std::cout << "\tNose: " << getDistort(cv::FaceDistortionType::Nose) << std::endl;
-        std::cout << "\tMouth: " << getDistort(cv::FaceDistortionType::Mouth) << std::endl;
-        std::cout << "\tUpper Head: " << getDistort(cv::FaceDistortionType::UpperHead) << std::endl;
-        std::cout << "\tLower Head: " << getDistort(cv::FaceDistortionType::LowerHead) << std::endl;
+    const auto setDistortionToAdapt = [&](const cv::FaceDistortionType type) {
+        distortionTypeToAdapt = type;
+        std::cout << std::format("Use up and down arrows to adapt {} distortion", cv::name(type)) << std::endl;
     };
 
     const auto incrementDistort = [&](cv::FaceDistortionType type) {
-        cv::increment(config.distortions, type);
-        printDistortions();
+        if (type < cv::FaceDistortionType::Num)
+        {
+            std::cout << std::format("{} distortion set to {}", cv::name(type), cv::increment(config.distortions, type))
+                      << std::endl;
+        }
     };
     const auto decrementDistort = [&](cv::FaceDistortionType type) {
-        cv::decrement(config.distortions, type);
-        printDistortions();
+        if (type < cv::FaceDistortionType::Num)
+        {
+            std::cout << std::format("{} distortion set to {}", cv::name(type), cv::decrement(config.distortions, type))
+                      << std::endl;
+        }
     };
 
     const auto toggleDistortAlways = [&]() {
         config.distortAlways = !config.distortAlways;
-        std::cout << "Distort always: " << config.distortAlways << std::endl;
+        std::cout << std::format("Distort always: {}", config.distortAlways) << std::endl;
     };
 
     const auto toggleDrawLandmarks = [&]() {
         config.drawLandmarks = !config.drawLandmarks;
-        std::cout << "Drawe Landmarks: " << config.drawLandmarks << std::endl;
+        std::cout << "Draw Landmarks: " << config.drawLandmarks << std::endl;
     };
 
     const auto toggleOutputStream = [&outputStream]() {
+        const auto device = "/dev/video5";
         if (outputStream == std::nullopt)
         {
-            const auto device = "/dev/video5";
             outputStream.emplace(device);
-            std::cout << "Streaming to " << device << std::endl;
+            if (outputStream->ok())
+                std::cout << std::format("Streaming to {}", device) << std::endl;
+            else
+            {
+                outputStream.reset();
+                std::cout << std::format("Cannot stream to {}", device) << std::endl;
+                std::cout << "Have you inserted a v4l2loopback device? If not, try" << std::endl;
+                std::cout << "\tsudo modprobe v4l2loopback exclusive_caps=1 video_nr=5 card_label=\"Glubschauge Cam\""
+                          << std::endl;
+            }
         }
         else
         {
             outputStream.reset();
-            std::cout << "Streaming stopped" << std::endl;
+            std::cout << std::format("Stopped streaming to {}", device) << std::endl;
         }
     };
 
     const auto handleKeyInput = [&](const auto key) {
-        switch (key)
+        switch (std::tolower(key))
         {
             case 'a':
                 toggleDistortAlways();
@@ -76,35 +87,26 @@ int main(int, char *[])
             case 'd':
                 toggleDrawLandmarks();
                 break;
-            case 'e':
-                decrementDistort(cv::FaceDistortionType::Eyes);
+            case 116:    // 'arrow down' seems to be 'T'?
+                decrementDistort(distortionTypeToAdapt);
                 break;
-            case 'E':
-                incrementDistort(cv::FaceDistortionType::Eyes);
+            case 114:    // 'arrow up' seems to be 'R'?
+                incrementDistort(distortionTypeToAdapt);
+                break;
+            case 'e':
+                setDistortionToAdapt(cv::FaceDistortionType::Eyes);
                 break;
             case 'n':
-                decrementDistort(cv::FaceDistortionType::Nose);
-                break;
-            case 'N':
-                incrementDistort(cv::FaceDistortionType::Nose);
+                setDistortionToAdapt(cv::FaceDistortionType::Nose);
                 break;
             case 'm':
-                decrementDistort(cv::FaceDistortionType::Mouth);
-                break;
-            case 'M':
-                incrementDistort(cv::FaceDistortionType::Mouth);
+                setDistortionToAdapt(cv::FaceDistortionType::Mouth);
                 break;
             case 'u':
-                decrementDistort(cv::FaceDistortionType::UpperHead);
-                break;
-            case 'U':
-                incrementDistort(cv::FaceDistortionType::UpperHead);
+                setDistortionToAdapt(cv::FaceDistortionType::UpperHead);
                 break;
             case 'l':
-                decrementDistort(cv::FaceDistortionType::LowerHead);
-                break;
-            case 'L':
-                incrementDistort(cv::FaceDistortionType::LowerHead);
+                setDistortionToAdapt(cv::FaceDistortionType::LowerHead);
                 break;
             case 's':
                 toggleOutputStream();
@@ -132,9 +134,10 @@ int main(int, char *[])
         if (cap.read(frame))
         {
             glubschEffect.process(frame);
-            cv::imshow("Glubschauge", frame);
             if (outputStream)
                 outputStream->push(frame);
+            cv::flip(frame, frame, 1);
+            cv::imshow("Glubschauge", frame);
         }
         handleKeyInput(cv::waitKey(5));
     }

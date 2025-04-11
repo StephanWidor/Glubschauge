@@ -13,33 +13,43 @@ enum class FaceDistortionType : size_t
     Num
 };
 
+constexpr std::array<std::string_view, static_cast<size_t>(FaceDistortionType::Num) + 1u> distortionNames{
+  "Eyes", "Nose", "Mouth", "Upper head", "Lower head", "Unknown"};
+
+constexpr std::string_view name(const FaceDistortionType type)
+{
+    return distortionNames[static_cast<size_t>(type)];
+}
+
 using FaceDistortions = std::array<double, static_cast<size_t>(FaceDistortionType::Num)>;
 constexpr FaceDistortions defaultFaceDistortions{0.3, 0.9, 0.1, 0.1, 0.0};
 
 constexpr double get(const FaceDistortions &distortions, const FaceDistortionType &type)
 {
-    assert(type < FaceDistortionType::Num);
-    return distortions[static_cast<size_t>(type)];
+    if (type < FaceDistortionType::Num)
+        return distortions[static_cast<size_t>(type)];
+    return 0.0;
 }
 
-constexpr void set(FaceDistortions &distortions, const FaceDistortionType &type, const double factor)
+constexpr double set(FaceDistortions &distortions, const FaceDistortionType &type, const double factor)
 {
-    assert(type < FaceDistortionType::Num);
-    distortions[static_cast<size_t>(type)] = std::clamp(factor, 0.0, 1.0);
+    if (type < FaceDistortionType::Num)
+        return distortions[static_cast<size_t>(type)] = std::clamp(factor, 0.0, 1.0);
+    return 0.0;
 }
 
 constexpr double defaultIncrementStep = 0.1;
 
-inline void increment(FaceDistortions &distortions, FaceDistortionType type,
-                      double incrementStep = defaultIncrementStep)
+inline double increment(FaceDistortions &distortions, FaceDistortionType type,
+                        double incrementStep = defaultIncrementStep)
 {
-    set(distortions, type, (std::floor(get(distortions, type) / incrementStep) + 1.0) * incrementStep);
+    return set(distortions, type, (std::floor(get(distortions, type) / incrementStep) + 1.0) * incrementStep);
 }
 
-inline void decrement(FaceDistortions &distortions, FaceDistortionType type,
-                      double incrementStep = defaultIncrementStep)
+inline double decrement(FaceDistortions &distortions, FaceDistortionType type,
+                        double incrementStep = defaultIncrementStep)
 {
-    set(distortions, type, (std::floor(get(distortions, type) / incrementStep) - 1.0) * incrementStep);
+    return set(distortions, type, (std::floor(get(distortions, type) / incrementStep) - 1.0) * incrementStep);
 }
 
 struct BarrelInfo
