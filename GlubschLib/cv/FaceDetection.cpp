@@ -5,19 +5,21 @@
 
 namespace cv {
 
-FaceDetection::FaceDetection(const std::string &cascadeDataPath, const std::string &facemarkDataPath)
+FaceDetection::FaceDetection(const std::filesystem::path &cascadeDataPath,
+                             const std::filesystem::path &facemarkDataPath)
     : m_facemark(face::FacemarkLBF::create())
 {
     m_dataLoaded = loadData(cascadeDataPath, facemarkDataPath);
 }
 
-bool FaceDetection::loadData(const std::string &cascadeDataPath, const std::string &facemarkDataPath)
+bool FaceDetection::loadData(const std::filesystem::path &cascadeDataPath,
+                             const std::filesystem::path &facemarkDataPath)
 {
     try
     {
-        if (m_faceDetector.load(cascadeDataPath))
+        if (m_faceDetector.load(cascadeDataPath.string()))
         {
-            m_facemark->loadModel(facemarkDataPath);
+            m_facemark->loadModel(facemarkDataPath.string());
             return true;
         }
     }

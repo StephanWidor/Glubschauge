@@ -35,6 +35,8 @@ bool saveToYaml(const GlubschConfig &config, const std::filesystem::path &path)
 {
     try
     {
+        if (!std::filesystem::create_directories(path.parent_path()))
+            throw std::exception{};
         cv::FileStorage file(path.string(), cv::FileStorage::WRITE);
         if (file.isOpened())
         {

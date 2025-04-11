@@ -1,4 +1,5 @@
 #pragma once
+#include <filesystem>
 #include <opencv2/face.hpp>
 #include <opencv2/opencv.hpp>
 
@@ -23,7 +24,7 @@ public:
         InnerLip
     };
 
-    FaceDetection(const std::string &cascadeDataPath, const std::string &facemarkDataPath);
+    FaceDetection(const std::filesystem::path &cascadeDataPath, const std::filesystem::path &facemarkDataPath);
 
     std::pair<BBoxes, std::vector<Landmarks>> detect(const Mat &img);
 
@@ -39,7 +40,7 @@ public:
     }
 
 private:
-    bool loadData(const std::string &cascadeDataPath, const std::string &facemarkDataPath);
+    bool loadData(const std::filesystem::path &cascadeDataPath, const std::filesystem::path &facemarkDataPath);
 
     std::vector<Rect> findBBoxes(const Mat &img);
 

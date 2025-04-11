@@ -18,7 +18,7 @@ bool saveToYaml(const GlubschConfig &, const std::filesystem::path &);
 class GlubschEffect
 {
 public:
-    GlubschEffect(const std::string &cascadeDataPath, const std::string &facemarkDataPath,
+    GlubschEffect(const std::filesystem::path &cascadeDataPath, const std::filesystem::path &facemarkDataPath,
                   GlubschConfig initConfig = GlubschConfig{})
         : config{initConfig}, m_faceDetection(cascadeDataPath, facemarkDataPath)
     {}
