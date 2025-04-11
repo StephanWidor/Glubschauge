@@ -78,7 +78,30 @@ int main(int, char *[])
         }
     };
 
+#ifdef WIN32
+    constexpr auto downKey = 2621440;
+    constexpr auto upKey = 2490368;
+#else
+    constexpr auto downKey = 65364;
+    constexpr auto upKey = 65362;
+#endif
+
     const auto handleKeyInput = [&](const auto key) {
+        switch (key)
+        {
+            case downKey:
+            {
+                decrementDistort(distortionTypeToAdapt);
+                return;
+            }
+            case upKey:
+            {
+                incrementDistort(distortionTypeToAdapt);
+                return;
+            }
+            default:
+                break;
+        }
         switch (std::tolower(key))
         {
             case 'a':
@@ -86,12 +109,6 @@ int main(int, char *[])
                 break;
             case 'd':
                 toggleDrawLandmarks();
-                break;
-            case 116:    // 'arrow down' seems to be 'T'?
-                decrementDistort(distortionTypeToAdapt);
-                break;
-            case 114:    // 'arrow up' seems to be 'R'?
-                incrementDistort(distortionTypeToAdapt);
                 break;
             case 'e':
                 setDistortionToAdapt(cv::FaceDistortionType::Eyes);
@@ -109,7 +126,8 @@ int main(int, char *[])
                 setDistortionToAdapt(cv::FaceDistortionType::LowerHead);
                 break;
             case 's':
-                toggleOutputStream();
+                if (cv::V4lLoopbackDevice::implemented())
+                    toggleOutputStream();
                 break;
             case 'c':
                 run = false;
@@ -139,7 +157,7 @@ int main(int, char *[])
             cv::flip(frame, frame, 1);
             cv::imshow("Glubschauge", frame);
         }
-        handleKeyInput(cv::waitKey(5));
+        handleKeyInput(cv::waitKeyEx(5));
     }
     cv::destroyAllWindows();
     cv::saveToYaml(glubschEffect.config, configPath);
