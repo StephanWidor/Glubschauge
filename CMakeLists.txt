@@ -12,7 +12,7 @@ cmake_dependent_option(BUILD_OCV_HIGHGUI_APP "Build App using OCV's highgui modu
                        "NOT ANDROID" OFF)
 
 if(WIN32)
-    set(OCV_FORCE_RELEASE_BUILD "" CACHE STRING OFF)    # otherwise we get problems with CRT
+    set(OCV_FORCE_RELEASE_BUILD OFF CACHE BOOL "")    # otherwise we get problems with CRT
 endif()
 add_subdirectory(OpenCV)
 add_subdirectory(GlubschLib)
