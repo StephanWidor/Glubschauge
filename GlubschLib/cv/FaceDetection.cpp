@@ -60,7 +60,6 @@ std::vector<Rect> FaceDetection::findBBoxes(const Mat &img)
         return {};
     if (processImg.channels() == 3)
         cvtColor(processImg, processImg, COLOR_BGR2GRAY);
-    equalizeHist(processImg, processImg);
     std::vector<Rect> bboxes;
     m_faceDetector.detectMultiScale(processImg, bboxes);
     if (scaleFactor != 1.0)
