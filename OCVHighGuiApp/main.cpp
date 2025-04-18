@@ -9,7 +9,11 @@ int main(int, char *[])
 {
     const auto configPath = []() {
         if (const auto home = std::getenv("HOME"))
-            return std::filesystem::path{home} / ".local/share/Glubschauge/GlubschConfig.yaml";
+        {
+            auto configDir = std::filesystem::path{home} / ".config/share/Glubschauge";
+            if (std::filesystem::exists(configDir) || std::filesystem::create_directories(configDir))
+                return configDir / "GlubschConfig.yaml";
+        }
         return std::filesystem::temp_directory_path() / "GlubschConfig.yaml";
     }();
 
