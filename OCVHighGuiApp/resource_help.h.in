@@ -1,0 +1,6 @@
+#pragma once
+#include <string>
+
+std::string haarcascade_xml = R"(@HAARCASCADE_XML@)";
+
+std::string lbfmodel_yaml = R"(@LBFMODEL_YAML@)";

@@ -1,21 +1,39 @@
+#include "resource_help.h"
 #include <cctype>
 #include <cv/GlubschEffect.h>
 #include <cv/V4lLoopbackDevice.h>
 #include <filesystem>
+
+#include <fstream>
 #include <opencv2/opencv.hpp>
 #include <optional>
 
 int main(int, char *[])
 {
-    const auto configPath = []() {
+    const auto appDataDir = []() {
         if (const auto home = std::getenv("HOME"))
         {
-            auto configDir = std::filesystem::path{home} / ".config/share/Glubschauge";
-            if (std::filesystem::exists(configDir) || std::filesystem::create_directories(configDir))
-                return configDir / "GlubschConfig.yaml";
+            auto dir = std::filesystem::path{home} / ".config/Glubschauge";
+            if (std::filesystem::exists(dir) || std::filesystem::create_directories(dir))
+                return dir;
         }
-        return std::filesystem::temp_directory_path() / "GlubschConfig.yaml";
+        return std::filesystem::temp_directory_path();
     }();
+
+    const auto saveModelFileToAppDataDir = [&](const std::string_view fileName, const std::string &content) {
+        auto path = appDataDir / fileName;
+        if (!std::filesystem::exists(path))
+        {
+            std::ofstream out(path.string());
+            if (out.is_open())
+                out << content;
+        }
+        return path;
+    };
+
+    const auto configPath = appDataDir / "GlubschConfig.yaml";
+    const auto haarcascadePath = saveModelFileToAppDataDir("haarcascade_frontalface_default.xml", haarcascade_xml);
+    const auto lbfmodelPath = saveModelFileToAppDataDir("lbfmodel.yaml", lbfmodel_yaml);
 
     cv::namedWindow("Glubschauge", cv::WINDOW_AUTOSIZE);
     cv::VideoCapture cap;
@@ -23,8 +41,7 @@ int main(int, char *[])
     bool run{true};
     std::optional<cv::V4lLoopbackDevice> outputStream;
 
-    cv::GlubschEffect glubschEffect("haarcascade_frontalface_default.xml", "lbfmodel.yaml",
-                                    cv::loadGlubschConfigFromYaml(configPath));
+    cv::GlubschEffect glubschEffect(haarcascadePath, lbfmodelPath, cv::loadGlubschConfigFromYaml(configPath));
     auto &config = glubschEffect.config;
 
     cv::FaceDistortionType distortionTypeToAdapt = cv::FaceDistortionType::Num;
