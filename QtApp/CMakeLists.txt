@@ -45,3 +45,10 @@ if(ANDROID)
     set(ANDROID_VERSION_CODE 2)
     set(ANDROID_VERSION_NAME 1.1.0)
 endif()
+
+if(APPLE)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        MACOSX_BUNDLE TRUE
+        MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/macos/Info.plist.in
+    )
+endif()
