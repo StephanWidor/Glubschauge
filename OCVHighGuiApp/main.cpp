@@ -99,9 +99,12 @@ int main(int, char *[])
         }
     };
 
-#ifdef WIN32
+#if defined(WIN32)
     constexpr auto downKey = 2621440;
     constexpr auto upKey = 2490368;
+#elif defined(__APPLE__)
+    constexpr auto downKey = 63233;
+    constexpr auto upKey = 63232;
 #else
     constexpr auto downKey = 65364;
     constexpr auto upKey = 65362;
