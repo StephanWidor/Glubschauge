@@ -2,6 +2,13 @@
 #include "logger.h"
 #include <opencv2/opencv.hpp>
 
+#ifdef V4L_AVAILABLE
+#include <fcntl.h>
+#include <linux/videodev2.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+#endif
+
 namespace cv {
 
 bool V4lLoopbackDevice::setSize([[maybe_unused]] const Size &size)

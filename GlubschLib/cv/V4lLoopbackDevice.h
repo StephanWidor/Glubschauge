@@ -1,12 +1,4 @@
 #pragma once
-#if !defined(ANDROID) && __has_include(<sys/ioctl.h>)
-#include <fcntl.h>
-#include <linux/videodev2.h>
-#include <sys/ioctl.h>
-#include <unistd.h>
-#define V4L_AVAILABLE
-#endif
-
 #include <opencv2/core.hpp>
 #include <string_view>
 

@@ -81,3 +81,14 @@ else()
         message("ImageMagick not found, will disable gif export")
     endif()
 endif()
+
+
+##### v4l2loopback #####
+include(CheckIncludeFiles)
+check_include_files("fcntl.h;linux/videodev2.h;sys/ioctl.h;unistd.h" V4L_AVAILABLE)
+if(V4L_AVAILABLE)
+    message("v4l is available, will enable loopback")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC V4L_AVAILABLE)
+else()
+    message("v4l is not available, will not enable loopback")
+endif()
