@@ -2,7 +2,6 @@
 #include "cv/Utils2D.h"
 
 #include <numeric>
-#include <omp.h>
 
 namespace cv {
 
